@@ -22,6 +22,7 @@ public class IncomingOrderEventProducer implements DisruptorProducer<IncomingOrd
     @Inject
     public IncomingOrderEventProducer(Disruptor<IncomingOrderEvent> disruptor, EventTranslatorOneArg<IncomingOrderEvent, byte[]> translator)
     {
+    	//TODO look into Guice to do this, currently hard to test
         this.ringBuffer = disruptor.getRingBuffer();
         this.translator = translator;
     }

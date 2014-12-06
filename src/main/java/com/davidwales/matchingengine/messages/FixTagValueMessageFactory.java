@@ -7,7 +7,7 @@ import com.carrotsearch.hppc.IntLongOpenHashMap;
 import com.carrotsearch.hppc.IntObjectOpenHashMap;
 import com.google.inject.Inject;
 
-public class FixTagValueMessageFactory implements TagValueMessageFactory<TagValueMessage> 
+public class FixTagValueMessageFactory implements TagValueMessageFactory 
 {
 
 	DataType[] tagToDataTypes;

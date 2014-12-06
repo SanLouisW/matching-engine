@@ -8,10 +8,10 @@ import com.lmax.disruptor.EventFactory;
 public class IncomingOrderEventFactory implements EventFactory<IncomingOrderEvent> 
 {
 
-	private final TagValueMessageFactory<TagValueMessage> tagValueMessageFactory;
+	private final TagValueMessageFactory tagValueMessageFactory;
 	
 	@Inject
-	public IncomingOrderEventFactory(TagValueMessageFactory<TagValueMessage> tagValueMessageFactory)
+	public IncomingOrderEventFactory(TagValueMessageFactory tagValueMessageFactory)
 	{
 		this.tagValueMessageFactory = tagValueMessageFactory;
 	}

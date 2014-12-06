@@ -42,7 +42,7 @@ public class DisruptorModule extends AbstractModule
 	protected void configure() 
 	{
 		//RingBuffer dependency injection
-		bind(new TypeLiteral<TagValueMessageFactory<TagValueMessage>>(){}).to(FixTagValueMessageFactory.class);
+		bind(TagValueMessageFactory.class).to(FixTagValueMessageFactory.class);
 		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
 		bind(new TypeLiteral<Parser<TagValueMessage>>(){}).to(TagValueParser.class);
 		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Persister.class).to(IncomingOrderPersister.class);
