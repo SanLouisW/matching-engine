@@ -2,18 +2,10 @@ package com.davidwales.matchingengine.parser;
 
 import com.davidwales.matchingengine.messages.DataType;
 import com.davidwales.matchingengine.messages.TagValueMessage;
-import com.google.inject.Inject;
 
-public class FixParser implements Parser {
+public class TagValueParser implements Parser<TagValueMessage> 
+{
 	
-	public DataType[] tagToDataTypes;
-	
-	@Inject
-	public FixParser(DataType[] tagToDataTypes)
-	{
-		this.tagToDataTypes = tagToDataTypes;
-	}
-
 	public void parseData(byte[] rawData, TagValueMessage parsedMessage) throws Exception
 	{
 		int tag = 0;
@@ -44,7 +36,7 @@ public class FixParser implements Parser {
 	
 	public void processValue(byte[] data, int start, int end, int tag, TagValueMessage parsedMessage) throws Exception
 	{
-		DataType dataTypeToParseTo = tagToDataTypes[tag];
+		DataType dataTypeToParseTo = parsedMessage.getTagDataType(tag);
 		
 		switch (dataTypeToParseTo) 
 		{

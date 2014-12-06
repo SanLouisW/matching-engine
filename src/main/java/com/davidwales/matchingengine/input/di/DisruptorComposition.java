@@ -1,7 +1,5 @@
 package com.davidwales.matchingengine.input.di;
 
-import java.nio.ByteBuffer;
-
 import com.davidwales.matchingengine.input.event.DisruptorProducer;
 import com.davidwales.matchingengine.input.event.IncomingOrderEvent;
 import com.google.inject.Inject;

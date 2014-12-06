@@ -1,16 +1,17 @@
 package com.davidwales.matchingengine.input.handlers;
 
 import com.davidwales.matchingengine.input.event.IncomingOrderEvent;
+import com.davidwales.matchingengine.messages.TagValueMessage;
 import com.davidwales.matchingengine.parser.Parser;
 import com.google.inject.Inject;
 import com.lmax.disruptor.EventHandler;
 
 public class IncomingOrderUnmarshaller implements EventHandler<IncomingOrderEvent> 
 {
-	@Inject
-	private Parser parser;
+	private Parser<TagValueMessage> parser;
 	
-	public IncomingOrderUnmarshaller(Parser parser)
+	@Inject
+	public IncomingOrderUnmarshaller(Parser<TagValueMessage> parser)
 	{
 		this.parser = parser;
 	}

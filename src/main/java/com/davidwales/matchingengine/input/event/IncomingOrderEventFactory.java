@@ -2,14 +2,16 @@ package com.davidwales.matchingengine.input.event;
 
 import com.davidwales.matchingengine.messages.TagValueMessage;
 import com.davidwales.matchingengine.messages.TagValueMessageFactory;
+import com.google.inject.Inject;
 import com.lmax.disruptor.EventFactory;
 
 public class IncomingOrderEventFactory implements EventFactory<IncomingOrderEvent> 
 {
+
+	private final TagValueMessageFactory<TagValueMessage> tagValueMessageFactory;
 	
-	private final TagValueMessageFactory tagValueMessageFactory;
-	
-	public IncomingOrderEventFactory(TagValueMessageFactory tagValueMessageFactory)
+	@Inject
+	public IncomingOrderEventFactory(TagValueMessageFactory<TagValueMessage> tagValueMessageFactory)
 	{
 		this.tagValueMessageFactory = tagValueMessageFactory;
 	}

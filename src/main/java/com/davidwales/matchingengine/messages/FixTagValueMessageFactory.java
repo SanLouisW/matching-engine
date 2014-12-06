@@ -5,11 +5,22 @@ import com.carrotsearch.hppc.IntCharOpenHashMap;
 import com.carrotsearch.hppc.IntIntOpenHashMap;
 import com.carrotsearch.hppc.IntLongOpenHashMap;
 import com.carrotsearch.hppc.IntObjectOpenHashMap;
+import com.google.inject.Inject;
 
-public class FixTagValueMessageFactory implements TagValueMessageFactory {
+public class FixTagValueMessageFactory implements TagValueMessageFactory<TagValueMessage> 
+{
 
+	DataType[] tagToDataTypes;
+	
+	@Inject
+	public FixTagValueMessageFactory(DataType[] tagToDataTypes)
+	{
+		this.tagToDataTypes = tagToDataTypes;
+	}
+	
 	@Override
-	public FixTagValueMessage newInstance() {
+	public TagValueMessage newInstance() 
+	{
 		
 		IntIntOpenHashMap intMap = IntIntOpenHashMap.newInstance(400, 401);
 		IntLongOpenHashMap longMap = IntLongOpenHashMap.newInstance(400, 401);
@@ -17,7 +28,7 @@ public class FixTagValueMessageFactory implements TagValueMessageFactory {
 		IntByteOpenHashMap byteMap = IntByteOpenHashMap.newInstance(400, 401);
 		IntCharOpenHashMap charMap = IntCharOpenHashMap.newInstance(400, 401);
 		
-		return new FixTagValueMessage(intMap, longMap, stringMap, byteMap, charMap);
+		return new FixTagValueMessage(intMap, longMap, stringMap, byteMap, charMap, tagToDataTypes);
 		
 	}
 

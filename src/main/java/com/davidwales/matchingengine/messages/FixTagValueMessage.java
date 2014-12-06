@@ -18,13 +18,16 @@ public class FixTagValueMessage implements TagValueMessage
 	
 	final private IntCharOpenHashMap charMap;
 	
-	public FixTagValueMessage(IntIntOpenHashMap intMap, IntLongOpenHashMap longMap, IntObjectOpenHashMap<char[]> stringMap, IntByteOpenHashMap byteMap, IntCharOpenHashMap charMap)
+	final public DataType[] tagToDataTypes;
+
+	public FixTagValueMessage(IntIntOpenHashMap intMap, IntLongOpenHashMap longMap, IntObjectOpenHashMap<char[]> stringMap, IntByteOpenHashMap byteMap, IntCharOpenHashMap charMap, DataType[] tagToDataTypes)
 	{
 		this.intMap = intMap;
 		this.longMap = longMap;
 		this.stringMap = stringMap;
 		this.byteMap = byteMap;
 		this.charMap = charMap;
+		this.tagToDataTypes = tagToDataTypes;
 	}
 
 	@Override
@@ -97,6 +100,12 @@ public class FixTagValueMessage implements TagValueMessage
 	public char getChar(int tag) 
 	{
 		return charMap.get(tag);
+	}
+
+	@Override
+	public DataType getTagDataType(int tag) 
+	{
+		return tagToDataTypes[tag];
 	}
 	
 }

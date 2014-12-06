@@ -25,5 +25,7 @@ public interface TagValueMessage {
 	boolean getBuy();
 	
 	char[] getSymbol();
+	
+	DataType getTagDataType(int tag);
 
 }

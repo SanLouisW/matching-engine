@@ -1,7 +1,7 @@
 package com.davidwales.matchingengine.messages;
 
-public interface TagValueMessageFactory {
+public interface TagValueMessageFactory<T extends TagValueMessage> {
 
-	TagValueMessage newInstance();
+	T newInstance();
 	
 }
