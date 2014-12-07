@@ -3,10 +3,10 @@ package com.davidwales.matchingengine.parser;
 import com.davidwales.matchingengine.messages.DataType;
 import com.davidwales.matchingengine.messages.TagValueMessage;
 
-public class TagValueParser implements Parser<TagValueMessage> 
+public class TagValueParser<T extends TagValueMessage> implements Parser<T> 
 {
 	
-	public void parseData(byte[] rawData, TagValueMessage parsedMessage) throws Exception
+	public void parseData(byte[] rawData, T parsedMessage) throws Exception
 	{
 		int tag = 0;
 		int start = 0;
@@ -14,7 +14,7 @@ public class TagValueParser implements Parser<TagValueMessage>
 		
 		for(int i = 0; i < rawData.length; i++ )
 		{
-			if(rawData[i] == 1 || rawData[i] == '\n')
+			if(rawData[i] == '|' || rawData[i] == '\n')
 			{
 				end = i;
 				processValue(rawData, start, end, tag, parsedMessage);
@@ -34,7 +34,7 @@ public class TagValueParser implements Parser<TagValueMessage>
 		return processInt(data, start, end);
 	}
 	
-	public void processValue(byte[] data, int start, int end, int tag, TagValueMessage parsedMessage) throws Exception
+	public void processValue(byte[] data, int start, int end, int tag, T parsedMessage) throws Exception
 	{
 		DataType dataTypeToParseTo = parsedMessage.getTagDataType(tag);
 		
@@ -51,6 +51,14 @@ public class TagValueParser implements Parser<TagValueMessage>
 			case BOOLEAN:
 				boolean boolVal = processBoolean(data, start);
 				parsedMessage.putBool(boolVal, tag);
+				break;
+			case STRING:
+				char[] stringVal = processString(data, start, end);
+				parsedMessage.putString(stringVal, tag);
+				break;
+			case CHAR:
+				char charVal = processChar(data[start]);
+				parsedMessage.putChar(charVal, tag);
 				break;
 			default:
 				throw new IllegalStateException("Cannot find parser");
@@ -73,6 +81,22 @@ public class TagValueParser implements Parser<TagValueMessage>
 		for (int i = start; i < end; i++)
 		{	
 			value = 10*value + (by[i] -'0');
+		}
+		return value; 
+	}
+	
+	public char processChar(byte by)
+	{
+		return (char)by;
+	}
+	
+	
+	public char[] processString(byte[] by, int start, int end)
+	{
+		char[] value = new char[end - start];
+		for (int i = start, j = 0; i < end; i++, j++)
+		{	
+			value[j] = processChar(by[i]);
 		}
 		return value; 
 	}

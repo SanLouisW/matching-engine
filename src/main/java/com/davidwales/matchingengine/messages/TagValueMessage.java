@@ -6,7 +6,9 @@ public interface TagValueMessage {
 	
 	void putLong(long val, int tag);
 	
-	void putChar(char[] val, int tag);
+	void putChar(char val, int tag);
+	
+	public char getChar(int tag); 
 	
 	void putBool(boolean val, int tag);
 	
@@ -16,7 +18,7 @@ public interface TagValueMessage {
 	
 	char[] getString(int tag);
 	
-	char getChar(int tag);
+	void putString(char[] val, int tag);
 	
 	boolean getBool(int tag);
 	

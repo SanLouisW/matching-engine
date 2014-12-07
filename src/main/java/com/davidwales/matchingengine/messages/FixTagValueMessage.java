@@ -42,8 +42,22 @@ public class FixTagValueMessage implements TagValueMessage
 		longMap.put(tag, val);
 	}
 
+	
 	@Override
-	public void putChar(char[] val, int tag) 
+	public char getChar(int tag) 
+	{
+		return charMap.get(tag);
+	}
+
+	
+	@Override
+	public void putChar(char val, int tag) 
+	{
+		charMap.put(tag, val);
+	}
+	
+	@Override
+	public void putString(char[] val, int tag) 
 	{
 		stringMap.put(tag, val);
 	}
@@ -87,7 +101,7 @@ public class FixTagValueMessage implements TagValueMessage
 	@Override
 	public boolean getBuy() 
 	{
-		return stringMap.get(54)[0] == 1;
+		return charMap.get(54) == '1';
 	}
 
 	@Override
@@ -96,11 +110,6 @@ public class FixTagValueMessage implements TagValueMessage
 		return stringMap.get(55);
 	}
 
-	@Override
-	public char getChar(int tag) 
-	{
-		return charMap.get(tag);
-	}
 
 	@Override
 	public DataType getTagDataType(int tag) 

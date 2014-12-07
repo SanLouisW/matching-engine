@@ -5,13 +5,16 @@ import com.davidwales.matchingengine.input.event.IncomingOrderEvent;
 import com.google.inject.Inject;
 import com.lmax.disruptor.dsl.Disruptor;
 
-public class DisruptorComposition {
+public class DisruptorComposition 
+{
 	
 	private final Disruptor<IncomingOrderEvent> inputDisruptor;
+	
 	private final DisruptorProducer<IncomingOrderEvent, byte[]> producer;
 	
 	@Inject
-	public DisruptorComposition(Disruptor<IncomingOrderEvent> inputDisruptor, DisruptorProducer<IncomingOrderEvent, byte[]> producer){
+	public DisruptorComposition(Disruptor<IncomingOrderEvent> inputDisruptor, DisruptorProducer<IncomingOrderEvent, byte[]> producer)
+	{
 		this.inputDisruptor = inputDisruptor;
 		this.producer = producer;
 	}

@@ -2,13 +2,15 @@ package com.davidwales.matchingengine.priorityqueues;
 
 import com.carrotsearch.hppc.ObjectObjectOpenHashMap;
 import com.davidwales.matchingengine.messages.TagValueMessage;
+import com.google.inject.Inject;
 
 public class InstrumentMatcherImpl implements InstrumentsMatcher<TagValueMessage>
 {
 
-	ObjectObjectOpenHashMap<char[], OrderBook<TagValueMessage>> symbolToOrderBook;
+	ObjectObjectOpenHashMap<String, OrderBook<TagValueMessage>> symbolToOrderBook;
 	
-	public InstrumentMatcherImpl(ObjectObjectOpenHashMap<char[], OrderBook<TagValueMessage>> symbolToOrderBook)
+	@Inject
+	public InstrumentMatcherImpl(ObjectObjectOpenHashMap<String, OrderBook<TagValueMessage>> symbolToOrderBook)
 	{
 		this.symbolToOrderBook = symbolToOrderBook;
 	}
@@ -16,7 +18,7 @@ public class InstrumentMatcherImpl implements InstrumentsMatcher<TagValueMessage
 	@Override
 	public void put(TagValueMessage tagValueMessage) 
 	{
-		char[] symbol = tagValueMessage.getSymbol();
+		String symbol = new String(tagValueMessage.getSymbol());
 		
 		OrderBook<TagValueMessage> orderBook = symbolToOrderBook.get(symbol);
 		

@@ -16,12 +16,8 @@ public class App
     {
     	Injector injector = Guice.createInjector(new DisruptorModule());
     	DisruptorComposition disruptor = injector.getInstance(DisruptorComposition.class);
-
-        byte[] byteArray = null;
-        for (long l = 0; true; l++)
-        {
-            disruptor.onData(byteArray);
-            Thread.sleep(1000);
-        }   	
+    	
+        disruptor.onData("44=10|55=aaa|54=1|".getBytes());
+        disruptor.onData("44=10|55=aaa|54=2|".getBytes());
     }
 }

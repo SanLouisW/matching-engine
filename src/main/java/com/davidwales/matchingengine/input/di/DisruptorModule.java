@@ -5,9 +5,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.PriorityQueue;
 import java.util.concurrent.Executors;
 
+import com.carrotsearch.hppc.ObjectObjectOpenHashMap;
+import com.davidwales.matchingengine.input.di.annotations.Aggregator;
 import com.davidwales.matchingengine.input.di.annotations.Matcher;
+import com.davidwales.matchingengine.input.di.annotations.OutputPersister;
 import com.davidwales.matchingengine.input.di.annotations.Persister;
 import com.davidwales.matchingengine.input.di.annotations.Unmarshaller;
 import com.davidwales.matchingengine.input.event.DisruptorProducer;
@@ -18,13 +22,27 @@ import com.davidwales.matchingengine.input.handlers.IncomingOrderPersister;
 import com.davidwales.matchingengine.input.handlers.IncomingOrderUnmarshaller;
 import com.davidwales.matchingengine.input.handlers.MatcherConsumer;
 import com.davidwales.matchingengine.messages.DataType;
-import com.davidwales.matchingengine.messages.FixTagValueMessage;
 import com.davidwales.matchingengine.messages.FixTagValueMessageFactory;
 import com.davidwales.matchingengine.messages.TagValueMessage;
 import com.davidwales.matchingengine.messages.TagValueMessageFactory;
+import com.davidwales.matchingengine.output.disruptor.ExecuteOrderFactoryImpl;
+import com.davidwales.matchingengine.output.disruptor.ExecutedOrder;
+import com.davidwales.matchingengine.output.disruptor.ExecutedOrderFactory;
+import com.davidwales.matchingengine.output.disruptor.MatchingEventOutputDisruptor;
+import com.davidwales.matchingengine.output.disruptor.OrderOutputEvent;
+import com.davidwales.matchingengine.output.disruptor.OrderOutputEventFactory;
+import com.davidwales.matchingengine.output.disruptor.OrderOutputProducer;
+import com.davidwales.matchingengine.output.disruptor.handlers.OutputOrderAggregator;
+import com.davidwales.matchingengine.output.disruptor.handlers.OutputOrderPersister;
 import com.davidwales.matchingengine.parser.Parser;
 import com.davidwales.matchingengine.parser.TagValueParser;
+import com.davidwales.matchingengine.priorityqueues.ExecutedOrderOutput;
+import com.davidwales.matchingengine.priorityqueues.InstrumentMatcherImpl;
+import com.davidwales.matchingengine.priorityqueues.InstrumentsMatcher;
+import com.davidwales.matchingengine.priorityqueues.OrderBook;
+import com.davidwales.matchingengine.priorityqueues.OrderBookImpl;
 import com.davidwales.matchingengine.translator.IncomingOrderTranslator;
+import com.davidwales.matchingengine.translator.OutputOrderTranslator;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
@@ -43,14 +61,31 @@ public class DisruptorModule extends AbstractModule
 	{
 		//RingBuffer dependency injection
 		bind(TagValueMessageFactory.class).to(FixTagValueMessageFactory.class);
+		bind(ExecutedOrderFactory.class).to(ExecuteOrderFactoryImpl.class);
+		bind(ExecutedOrderOutput.class).to(MatchingEventOutputDisruptor.class);
 		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
-		bind(new TypeLiteral<Parser<TagValueMessage>>(){}).to(TagValueParser.class);
+		
+		//Here be dragons
+		bind(new TypeLiteral<EventFactory<OrderOutputEvent>>(){}).to(OrderOutputEventFactory.class);
+		bind(new TypeLiteral<EventHandler<OrderOutputEvent>>(){}).annotatedWith(Aggregator.class).to(OutputOrderPersister.class);
+		bind(new TypeLiteral<EventHandler<OrderOutputEvent>>(){}).annotatedWith(OutputPersister.class).to(OutputOrderAggregator.class);
+
+		//
+		
+		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
+		bind(new TypeLiteral<Parser<TagValueMessage>>(){}).to(new TypeLiteral<TagValueParser<TagValueMessage>>(){});
+		
+		bind(new TypeLiteral<OrderBook<TagValueMessage>>(){}).to(OrderBookImpl.class);
+		bind(new TypeLiteral<InstrumentsMatcher<TagValueMessage>>(){}).to(InstrumentMatcherImpl.class);
 		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Persister.class).to(IncomingOrderPersister.class);
 		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Unmarshaller.class).to(IncomingOrderUnmarshaller.class);
 		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Matcher.class).to(MatcherConsumer.class);
 		//Producer dependency injection 
 		bind(new TypeLiteral<EventTranslatorOneArg<IncomingOrderEvent, byte[]>>(){}).to(IncomingOrderTranslator.class);
+		bind(new TypeLiteral<EventTranslatorOneArg<OrderOutputEvent, ExecutedOrder>>(){}).to(OutputOrderTranslator.class);
+		
 		bind(new TypeLiteral<DisruptorProducer<IncomingOrderEvent, byte[]>>(){}).to(IncomingOrderEventProducer.class);
+		bind(new TypeLiteral<DisruptorProducer<OrderOutputEvent, ExecutedOrder>>(){}).to(OrderOutputProducer.class);
 	}
 	
 	@Singleton
@@ -67,6 +102,18 @@ public class DisruptorModule extends AbstractModule
 	}
 	
 	@Singleton
+	@Inject
+	@Provides
+	@SuppressWarnings("unchecked")
+	public Disruptor<OrderOutputEvent> getDisruptorOrderOutputEvent(EventFactory<OrderOutputEvent> factory, @Aggregator EventHandler<OrderOutputEvent> aggregator, @OutputPersister EventHandler<OrderOutputEvent> persister) 
+	{
+		Disruptor<OrderOutputEvent> disruptor = new Disruptor<>(factory, 1024, Executors.newCachedThreadPool());
+		disruptor.handleEventsWith(aggregator).then(persister);
+		disruptor.start();
+		return disruptor;     
+	}
+	
+	@Singleton
 	@Provides
 	public OutputStream getOuputStream() throws FileNotFoundException
 	{
@@ -75,13 +122,33 @@ public class DisruptorModule extends AbstractModule
 		return outputStream;
 	}
 	
+	@Provides
+	public PriorityQueue<TagValueMessage> getPriorityQueue()
+	{
+		return new PriorityQueue<TagValueMessage>(100, new TagValueMessageComparator());
+	}
+	
+	@Singleton
+	@Provides
+	@Inject
+	public ObjectObjectOpenHashMap<String, OrderBook<TagValueMessage>> getSymbolToOrderBook(OrderBook<TagValueMessage> orderBook)
+	{
+		ObjectObjectOpenHashMap<String, OrderBook<TagValueMessage>> symbolToOrderBook = ObjectObjectOpenHashMap.newInstance(1, 2);
+		String symbol = "aaa";
+		
+		symbolToOrderBook.put(symbol, orderBook);
+		return symbolToOrderBook;
+	}
+	
 	@Singleton
 	@Provides
 	public DataType[] getTagToDataTypes()
 	{
 		DataType[] dataTypes = new DataType[500];
 		Arrays.fill(dataTypes, DataType.NA);
-		
+		dataTypes[55] = DataType.STRING;
+		dataTypes[54] = DataType.CHAR;
+		dataTypes[44] = DataType.INTEGER;
 		return dataTypes;
 	}
 	
