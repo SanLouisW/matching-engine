@@ -17,6 +17,7 @@ public class ExecutedOrderImpl implements ExecutedOrder
 		this.secondaryOrder = secondaryOrder;
 	}
 
+	@Override
 	public TagValueMessage getPrimaryOrder() 
 	{
 		return primaryOrder;
@@ -27,6 +28,7 @@ public class ExecutedOrderImpl implements ExecutedOrder
 		this.primaryOrder = primaryOrder;
 	}
 
+	@Override
 	public TagValueMessage getSecondaryOrder() 
 	{
 		return secondaryOrder;

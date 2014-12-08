@@ -4,9 +4,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.PriorityQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+
+import org.java_websocket.server.WebSocketServer;
 
 import com.carrotsearch.hppc.ObjectObjectOpenHashMap;
 import com.davidwales.matchingengine.input.di.annotations.Aggregator;
@@ -32,6 +36,9 @@ import com.davidwales.matchingengine.output.disruptor.MatchingEventOutputDisrupt
 import com.davidwales.matchingengine.output.disruptor.OrderOutputEvent;
 import com.davidwales.matchingengine.output.disruptor.OrderOutputEventFactory;
 import com.davidwales.matchingengine.output.disruptor.OrderOutputProducer;
+import com.davidwales.matchingengine.output.disruptor.handlers.Aggregation;
+import com.davidwales.matchingengine.output.disruptor.handlers.AggregatorServer;
+import com.davidwales.matchingengine.output.disruptor.handlers.OrderAggregation;
 import com.davidwales.matchingengine.output.disruptor.handlers.OutputOrderAggregator;
 import com.davidwales.matchingengine.output.disruptor.handlers.OutputOrderPersister;
 import com.davidwales.matchingengine.parser.Parser;
@@ -111,6 +118,25 @@ public class DisruptorModule extends AbstractModule
 		disruptor.handleEventsWith(aggregator).then(persister);
 		disruptor.start();
 		return disruptor;     
+	}
+	
+	@Provides
+	@Singleton
+	public ConcurrentHashMap<String, Aggregation> getSymbolToAggregation()
+	{
+		ConcurrentHashMap<String, Aggregation> symbolToAggregation = new ConcurrentHashMap<String, Aggregation>();
+		symbolToAggregation.put("global", new OrderAggregation());
+		symbolToAggregation.put("aaa", new OrderAggregation());
+		return symbolToAggregation;
+	}
+	
+	@Inject
+	@Provides
+	public WebSocketServer getWebSocketServer(ConcurrentHashMap<String, Aggregation> symbolToAggregation) throws UnknownHostException 
+	{
+		AggregatorServer server = new AggregatorServer(8887, symbolToAggregation);
+		server.start();
+		return server;	
 	}
 	
 	@Singleton
