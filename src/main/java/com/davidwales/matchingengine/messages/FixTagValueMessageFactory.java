@@ -5,6 +5,7 @@ import com.carrotsearch.hppc.IntCharOpenHashMap;
 import com.carrotsearch.hppc.IntIntOpenHashMap;
 import com.carrotsearch.hppc.IntLongOpenHashMap;
 import com.carrotsearch.hppc.IntObjectOpenHashMap;
+import com.davidwales.matchingengine.parser.Parser;
 import com.google.inject.Inject;
 
 public class FixTagValueMessageFactory implements TagValueMessageFactory 

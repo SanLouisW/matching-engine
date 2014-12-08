@@ -2,6 +2,7 @@ package com.davidwales.matchingengine.output.disruptor;
 
 import com.davidwales.matchingengine.input.event.DisruptorProducer;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.lmax.disruptor.EventTranslatorOneArg;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
@@ -15,7 +16,7 @@ public class OrderOutputProducer implements DisruptorProducer<OrderOutputEvent, 
     private final EventTranslatorOneArg<OrderOutputEvent, ExecutedOrder> translator;
     
 	@Inject
-    public OrderOutputProducer(Disruptor<OrderOutputEvent> disruptor, EventTranslatorOneArg<OrderOutputEvent, ExecutedOrder> translator)
+    public OrderOutputProducer(Disruptor<OrderOutputEvent> disruptor,  EventTranslatorOneArg<OrderOutputEvent, ExecutedOrder> translator)
     {
     	//TODO look into Guice to do this, currently hard to test
         this.ringBuffer = disruptor.getRingBuffer();
