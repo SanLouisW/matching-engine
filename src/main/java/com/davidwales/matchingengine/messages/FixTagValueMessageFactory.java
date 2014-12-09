@@ -11,7 +11,7 @@ import com.google.inject.Inject;
 public class FixTagValueMessageFactory implements TagValueMessageFactory 
 {
 
-	DataType[] tagToDataTypes;
+	private DataType[] tagToDataTypes;
 	
 	@Inject
 	public FixTagValueMessageFactory(DataType[] tagToDataTypes)

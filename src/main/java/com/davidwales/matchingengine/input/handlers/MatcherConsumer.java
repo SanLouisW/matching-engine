@@ -10,7 +10,7 @@ import com.lmax.disruptor.EventHandler;
 public class MatcherConsumer implements EventHandler<IncomingOrderEvent> 
 {
 
-	InstrumentsMatcher<TagValueMessage> instrumentsMatcher;
+	private InstrumentsMatcher<TagValueMessage> instrumentsMatcher;
 	
 	@Inject
 	public MatcherConsumer(InstrumentsMatcher<TagValueMessage> instrumentsMatcher)

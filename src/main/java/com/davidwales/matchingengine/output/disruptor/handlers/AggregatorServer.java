@@ -11,7 +11,8 @@ import org.java_websocket.server.WebSocketServer;
 public class AggregatorServer extends WebSocketServer 
 {
 	
-	ConcurrentHashMap<String, Aggregation> symbolToAggregation;
+	//Guice injects the hashmap that the aggregator thread modifies here
+	private ConcurrentHashMap<String, Aggregation> symbolToAggregation;
 	
 	public AggregatorServer( int port, ConcurrentHashMap<String, Aggregation> symbolToAggregation ) throws UnknownHostException 
 	{

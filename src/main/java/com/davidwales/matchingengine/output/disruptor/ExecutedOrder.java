@@ -5,16 +5,16 @@ import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 public interface ExecutedOrder 
 {
 
-	OrderStatus getOldStatus();
+	public OrderStatus getOldStatus();
 	
-	OrderStatus getNewStatus();
+	public OrderStatus getNewStatus();
 	
-	String getSymbol();
+	public String getSymbol();
 	
-	int getQuantity();
+	public int getQuantity();
 	
-	int getPrice();
+	public int getPrice();
 	
-	boolean getBuy();
+	public boolean getBuy();
 
 }

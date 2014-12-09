@@ -8,7 +8,7 @@ import com.lmax.disruptor.EventHandler;
 
 public class IncomingOrderPersister implements EventHandler<IncomingOrderEvent>{
 
-	OutputStream outputStream;
+	private OutputStream outputStream;
 	
 	@Inject
 	IncomingOrderPersister(OutputStream outputStream)

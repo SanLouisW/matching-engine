@@ -8,11 +8,11 @@ import com.google.inject.Inject;
 public class OrderBookImpl implements OrderBook<TagValueMessage>
 {
 	
-	PriorityQueue<TagValueMessage> buyQueue;
+	private PriorityQueue<TagValueMessage> buyQueue;
 	
-	PriorityQueue<TagValueMessage> sellQueue;
+	private PriorityQueue<TagValueMessage> sellQueue;
 	
-	ExecutedOrderOutput executedOrderOutput;
+	private ExecutedOrderOutput executedOrderOutput;
 	
 	@Inject
 	public OrderBookImpl(PriorityQueue<TagValueMessage> sellQueue, PriorityQueue<TagValueMessage> buyQueue, ExecutedOrderOutput executedOrderOutput)

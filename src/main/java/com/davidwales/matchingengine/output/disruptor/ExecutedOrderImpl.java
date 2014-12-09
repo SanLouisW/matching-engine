@@ -5,17 +5,17 @@ import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 public class ExecutedOrderImpl implements ExecutedOrder
 {
 
-	OrderStatus oldStatus;
+	public OrderStatus oldStatus;
 	
-	OrderStatus newStatus;
+	public OrderStatus newStatus;
 	
-	String symbol;
+	public String symbol;
 	
-	int quantity;
+	public int quantity;
 	
-	int price;
+	public int price;
 	
-	boolean buy;
+	public boolean buy;
 	
 	ExecutedOrderImpl(){}
 	

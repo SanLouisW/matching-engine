@@ -10,7 +10,7 @@ import com.google.inject.Inject;
 
 public class AggregatorTranslatorImpl implements AggregatorTranslator
 {
-	ConcurrentHashMap<String, Aggregation> symbolToAggregation;
+	private ConcurrentHashMap<String, Aggregation> symbolToAggregation;
 	
 	@Inject
 	public AggregatorTranslatorImpl(ConcurrentHashMap<String, Aggregation> symbolToAggregation)

@@ -4,41 +4,41 @@ import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 
 public interface TagValueMessage {
 	
-	void putInt(int val, int tag);
+	public void putInt(int val, int tag);
 	
-	void putLong(long val, int tag);
+	public void putLong(long val, int tag);
 	
-	void putChar(char val, int tag);
+	public void putChar(char val, int tag);
 	
 	public char getChar(int tag); 
 	
-	void putBool(boolean val, int tag);
+	public void putBool(boolean val, int tag);
 	
-	int getInt(int tag);
+	public int getInt(int tag);
 	
-	long getLong(int tag);
+	public long getLong(int tag);
 	
-	char[] getString(int tag);
+	public char[] getString(int tag);
 	
-	void putString(char[] val, int tag);
+	public void putString(char[] val, int tag);
 	
-	boolean getBool(int tag);
+	public boolean getBool(int tag);
 	
-	int getPrice();
+	public int getPrice();
 	
-	boolean getBuy();
+	public boolean getBuy();
 	
-	char[] getSymbol();
+	public char[] getSymbol();
 	
-	int getQuantity();
+	public int getQuantity();
 	
-	DataType getTagDataType(int tag);
+	public DataType getTagDataType(int tag);
 	
-	void setOrderStatus(OrderStatus status);
+	public void setOrderStatus(OrderStatus status);
 	
 	public boolean isFilled(int decrement);
 	
-	OrderStatus getOrderStatus();
+	public OrderStatus getOrderStatus();
 	
 
 }

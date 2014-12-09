@@ -7,7 +7,7 @@ import com.google.inject.Inject;
 public class InstrumentMatcherImpl implements InstrumentsMatcher<TagValueMessage>
 {
 
-	ObjectObjectOpenHashMap<String, OrderBook<TagValueMessage>> symbolToOrderBook;
+	private ObjectObjectOpenHashMap<String, OrderBook<TagValueMessage>> symbolToOrderBook;
 	
 	@Inject
 	public InstrumentMatcherImpl(ObjectObjectOpenHashMap<String, OrderBook<TagValueMessage>> symbolToOrderBook)

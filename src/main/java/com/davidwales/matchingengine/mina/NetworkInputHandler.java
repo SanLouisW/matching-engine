@@ -12,9 +12,9 @@ import com.google.inject.Inject;
 
 public class NetworkInputHandler extends IoHandlerAdapter 
 {
-	DisruptorProducer<IncomingOrderEvent, byte[]> disruptorProducer;
+	private DisruptorProducer<IncomingOrderEvent, byte[]> disruptorProducer;
 	
-	ConcurrentHashMap<String, IoSession> clientIdToSessionMap;
+	private ConcurrentHashMap<String, IoSession> clientIdToSessionMap;
 	
 	@Inject
 	public NetworkInputHandler(DisruptorProducer<IncomingOrderEvent, byte[]> disruptorProducer, ConcurrentHashMap<String, IoSession> clientIdToSessionMap)
@@ -36,6 +36,7 @@ public class NetworkInputHandler extends IoHandlerAdapter
     	// Inefficient, but i'm rolling with it as POC
     	// we really want to be doing this in the main disruptor
     	// will fix later
+    	// Violate Single responsibility principle
     	String messageString = (String) message;
     	
     	if(checkIfClientIdentificationMessage(session,  messageString))

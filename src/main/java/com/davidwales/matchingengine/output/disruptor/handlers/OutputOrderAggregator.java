@@ -10,7 +10,7 @@ import com.lmax.disruptor.EventHandler;
 public class OutputOrderAggregator implements EventHandler<OrderOutputEvent>  
 {
 	
-	AggregatorTranslator aggregatorTranslator;
+	private AggregatorTranslator aggregatorTranslator;
 	
 	@Inject
 	public OutputOrderAggregator(AggregatorTranslator aggregatorTranslator) throws UnknownHostException

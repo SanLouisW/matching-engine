@@ -17,7 +17,7 @@ public class MatchingEventOutputDisruptor implements ExecutedOrderOutput
 	private final DisruptorProducer<OrderOutputEvent, ExecutedOrder> producer;
 	
 	@Inject
-	MatchingEventOutputDisruptor(Disruptor<OrderOutputEvent> outputDisruptor, DisruptorProducer<OrderOutputEvent, ExecutedOrder> producer, ExecutedOrderFactory executedOrderFactory)
+	public MatchingEventOutputDisruptor(Disruptor<OrderOutputEvent> outputDisruptor, DisruptorProducer<OrderOutputEvent, ExecutedOrder> producer, ExecutedOrderFactory executedOrderFactory)
 	{
 		this.outputDisruptor = outputDisruptor;
 		this.producer = producer;

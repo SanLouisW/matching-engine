@@ -4,7 +4,7 @@ import com.davidwales.matchingengine.messages.TagValueMessage;
 
 public interface OrderBook<T extends TagValueMessage> {
 
-	void put(T message);
+	public void put(T message);
 	
-	void attemptMatch();
+	public void attemptMatch();
 }
