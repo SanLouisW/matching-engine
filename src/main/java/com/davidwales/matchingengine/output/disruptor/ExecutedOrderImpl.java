@@ -11,6 +11,8 @@ public class ExecutedOrderImpl implements ExecutedOrder
 	
 	public String symbol;
 	
+	public String clientId;
+	
 	public int quantity;
 	
 	public int price;
@@ -19,13 +21,14 @@ public class ExecutedOrderImpl implements ExecutedOrder
 	
 	ExecutedOrderImpl(){}
 	
-	ExecutedOrderImpl(OrderStatus oldStatus, OrderStatus newStatus, String symbol, int quantity, int price, boolean buy)
+	ExecutedOrderImpl(OrderStatus oldStatus, OrderStatus newStatus, String symbol, int quantity, int price, boolean buy, String clientId)
 	{
 		this.oldStatus = oldStatus;
 		this.newStatus = newStatus;
 		this.symbol = symbol;
 		this.quantity = quantity;
 		this.price = price;
+		this.clientId = clientId;
 	}
 
 	@Override
@@ -62,6 +65,12 @@ public class ExecutedOrderImpl implements ExecutedOrder
 	public boolean getBuy() 
 	{
 		return this.buy;
+	}
+
+	@Override
+	public String getClientId() 
+	{
+		return this.clientId;
 	}
 	
 }

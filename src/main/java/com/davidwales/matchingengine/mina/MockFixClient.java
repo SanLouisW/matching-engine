@@ -32,7 +32,7 @@ public class MockFixClient
 		}
 		
 		IoSession session = future.getSession();
-		session.write("44=10|55=aaa|54=1|38=10|");
+		session.write("44=10|55=aaa|54=1|38=10|109=mockClient|");
 		session.getConfig().setUseReadOperation(true);
 		session.getCloseFuture().awaitUninterruptibly();
 		System.out.println("After Writing");

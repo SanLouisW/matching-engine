@@ -1,7 +1,5 @@
 package com.davidwales.matchingengine.translator;
 
-import java.nio.ByteBuffer;
-
 import com.davidwales.matchingengine.input.event.IncomingOrderEvent;
 import com.lmax.disruptor.EventTranslatorOneArg;
 

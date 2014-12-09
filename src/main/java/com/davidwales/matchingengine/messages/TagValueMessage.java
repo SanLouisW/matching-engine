@@ -30,6 +30,8 @@ public interface TagValueMessage {
 	
 	public char[] getSymbol();
 	
+	public char[] getClientId();
+	
 	public int getQuantity();
 	
 	public DataType getTagDataType(int tag);

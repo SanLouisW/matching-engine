@@ -19,7 +19,6 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
-import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.java_websocket.server.WebSocketServer;
 
@@ -28,6 +27,7 @@ import com.davidwales.matchingengine.input.di.annotations.Aggregator;
 import com.davidwales.matchingengine.input.di.annotations.Matcher;
 import com.davidwales.matchingengine.input.di.annotations.OutputPersister;
 import com.davidwales.matchingengine.input.di.annotations.Persister;
+import com.davidwales.matchingengine.input.di.annotations.Responder;
 import com.davidwales.matchingengine.input.di.annotations.Unmarshaller;
 import com.davidwales.matchingengine.input.event.DisruptorProducer;
 import com.davidwales.matchingengine.input.event.IncomingOrderEvent;
@@ -51,6 +51,7 @@ import com.davidwales.matchingengine.output.disruptor.OrderOutputProducer;
 import com.davidwales.matchingengine.output.disruptor.handlers.Aggregation;
 import com.davidwales.matchingengine.output.disruptor.handlers.AggregatorServer;
 import com.davidwales.matchingengine.output.disruptor.handlers.OrderAggregation;
+import com.davidwales.matchingengine.output.disruptor.handlers.OrderOutputResponder;
 import com.davidwales.matchingengine.output.disruptor.handlers.OutputOrderAggregator;
 import com.davidwales.matchingengine.output.disruptor.handlers.OutputOrderPersister;
 import com.davidwales.matchingengine.output.disruptor.handlers.aggregators.AggregatorTranslator;
@@ -62,6 +63,8 @@ import com.davidwales.matchingengine.priorityqueues.InstrumentMatcherImpl;
 import com.davidwales.matchingengine.priorityqueues.InstrumentsMatcher;
 import com.davidwales.matchingengine.priorityqueues.OrderBook;
 import com.davidwales.matchingengine.priorityqueues.OrderBookImpl;
+import com.davidwales.matchingengine.responder.MessageResponder;
+import com.davidwales.matchingengine.responder.MessageResponderImpl;
 import com.davidwales.matchingengine.translator.IncomingOrderTranslator;
 import com.davidwales.matchingengine.translator.OutputOrderTranslator;
 import com.google.inject.AbstractModule;
@@ -85,11 +88,13 @@ public class DisruptorModule extends AbstractModule
 		bind(ExecutedOrderFactory.class).to(ExecuteOrderFactoryImpl.class);
 		bind(ExecutedOrderOutput.class).to(MatchingEventOutputDisruptor.class);
 		bind(AggregatorTranslator.class).to(AggregatorTranslatorImpl.class);
+		bind(MessageResponder.class).to(MessageResponderImpl.class);
 		bind(IoHandlerAdapter.class).to(NetworkInputHandler.class);
 		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
 		
 		//Here be dragons
 		bind(new TypeLiteral<EventFactory<OrderOutputEvent>>(){}).to(OrderOutputEventFactory.class);
+		bind(new TypeLiteral<EventHandler<OrderOutputEvent>>(){}).annotatedWith(Responder.class).to(OrderOutputResponder.class);
 		bind(new TypeLiteral<EventHandler<OrderOutputEvent>>(){}).annotatedWith(Aggregator.class).to(OutputOrderPersister.class);
 		bind(new TypeLiteral<EventHandler<OrderOutputEvent>>(){}).annotatedWith(OutputPersister.class).to(OutputOrderAggregator.class);
 		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
@@ -126,9 +131,10 @@ public class DisruptorModule extends AbstractModule
 	@Inject
 	@Provides
 	@SuppressWarnings("unchecked")
-	public Disruptor<OrderOutputEvent> getDisruptorOrderOutputEvent(EventFactory<OrderOutputEvent> factory, @Aggregator EventHandler<OrderOutputEvent> aggregator, @OutputPersister EventHandler<OrderOutputEvent> persister) 
+	public Disruptor<OrderOutputEvent> getDisruptorOrderOutputEvent(EventFactory<OrderOutputEvent> factory, @Aggregator EventHandler<OrderOutputEvent> aggregator, @OutputPersister EventHandler<OrderOutputEvent> persister, @Responder EventHandler<OrderOutputEvent> responder) 
 	{
 		Disruptor<OrderOutputEvent> disruptor = new Disruptor<>(factory, 1024, Executors.newCachedThreadPool());
+		disruptor.handleEventsWith(responder);
 		disruptor.handleEventsWith(aggregator).then(persister);
 		disruptor.start();
 		return disruptor;     
@@ -208,6 +214,7 @@ public class DisruptorModule extends AbstractModule
 	{
 		DataType[] dataTypes = new DataType[500];
 		Arrays.fill(dataTypes, DataType.NA);
+		dataTypes[109] = DataType.STRING;
 		dataTypes[38] = DataType.INTEGER;
 		dataTypes[55] = DataType.STRING;
 		dataTypes[54] = DataType.CHAR;

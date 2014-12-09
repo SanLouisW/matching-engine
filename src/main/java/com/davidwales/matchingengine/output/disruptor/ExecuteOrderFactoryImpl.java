@@ -9,7 +9,7 @@ public class ExecuteOrderFactoryImpl implements ExecutedOrderFactory
 	@Override
 	public ExecutedOrder newInstance(TagValueMessage message, OrderStatus oldStatus, OrderStatus newStatus, int quantity, int price)
 	{
-		return new ExecutedOrderImpl(oldStatus, newStatus, new String(message.getSymbol()), quantity, price , message.getBuy());
+		return new ExecutedOrderImpl(oldStatus, newStatus, new String(message.getSymbol()), quantity, price , message.getBuy(), new String(message.getClientId()));
 	}
 
 	@Override

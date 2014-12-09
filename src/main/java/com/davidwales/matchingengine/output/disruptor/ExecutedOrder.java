@@ -16,5 +16,7 @@ public interface ExecutedOrder
 	public int getPrice();
 	
 	public boolean getBuy();
+	
+	public String getClientId();
 
 }

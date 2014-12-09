@@ -131,6 +131,12 @@ public class FixTagValueMessage implements TagValueMessage
 		this.status = status;
 	}
 	
+	@Override
+	public char[] getClientId()
+	{
+		return stringMap.get(109);
+	}
+	
 	@Override 
 	public boolean isFilled(int decrement)
 	{

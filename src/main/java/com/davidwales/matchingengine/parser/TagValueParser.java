@@ -2,6 +2,8 @@ package com.davidwales.matchingengine.parser;
 
 import com.davidwales.matchingengine.messages.DataType;
 import com.davidwales.matchingengine.messages.TagValueMessage;
+import com.davidwales.matchingengine.output.disruptor.ExecutedOrder;
+import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 
 public class TagValueParser<T extends TagValueMessage> implements Parser<T> 
 {

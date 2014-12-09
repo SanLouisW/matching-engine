@@ -36,10 +36,10 @@ public class NetworkInputHandler extends IoHandlerAdapter
     	// Inefficient, but i'm rolling with it as POC
     	// we really want to be doing this in the main disruptor
     	// will fix later
-    	// Violate Single responsibility principle
+    	// Violates Single responsibility principle
     	String messageString = (String) message;
     	
-    	if(checkIfClientIdentificationMessage(session,  messageString))
+    	if(!checkIfClientIdentificationMessage(session,  messageString))
     	{
     		disruptorProducer.onData(messageString.getBytes());
     	}
