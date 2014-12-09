@@ -1,13 +1,12 @@
 package com.davidwales.matchingengine.input.event;
 
-import javax.security.auth.login.Configuration;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.lmax.disruptor.EventTranslatorOneArg;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 
+//Use Generics To get rid of output producer
 @Singleton
 public class IncomingOrderEventProducer implements DisruptorProducer<IncomingOrderEvent, byte[]> {
 	

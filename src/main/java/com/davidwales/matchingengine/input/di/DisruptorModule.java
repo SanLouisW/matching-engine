@@ -3,13 +3,24 @@ package com.davidwales.matchingengine.input.di;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
+import org.apache.mina.core.service.IoAcceptor;
+import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
+import org.apache.mina.filter.logging.LoggingFilter;
+import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.java_websocket.server.WebSocketServer;
 
 import com.carrotsearch.hppc.ObjectObjectOpenHashMap;
@@ -29,6 +40,7 @@ import com.davidwales.matchingengine.messages.DataType;
 import com.davidwales.matchingengine.messages.FixTagValueMessageFactory;
 import com.davidwales.matchingengine.messages.TagValueMessage;
 import com.davidwales.matchingengine.messages.TagValueMessageFactory;
+import com.davidwales.matchingengine.mina.NetworkInputHandler;
 import com.davidwales.matchingengine.output.disruptor.ExecuteOrderFactoryImpl;
 import com.davidwales.matchingengine.output.disruptor.ExecutedOrder;
 import com.davidwales.matchingengine.output.disruptor.ExecutedOrderFactory;
@@ -73,23 +85,22 @@ public class DisruptorModule extends AbstractModule
 		bind(ExecutedOrderFactory.class).to(ExecuteOrderFactoryImpl.class);
 		bind(ExecutedOrderOutput.class).to(MatchingEventOutputDisruptor.class);
 		bind(AggregatorTranslator.class).to(AggregatorTranslatorImpl.class);
+		bind(IoHandlerAdapter.class).to(NetworkInputHandler.class);
 		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
 		
 		//Here be dragons
 		bind(new TypeLiteral<EventFactory<OrderOutputEvent>>(){}).to(OrderOutputEventFactory.class);
 		bind(new TypeLiteral<EventHandler<OrderOutputEvent>>(){}).annotatedWith(Aggregator.class).to(OutputOrderPersister.class);
 		bind(new TypeLiteral<EventHandler<OrderOutputEvent>>(){}).annotatedWith(OutputPersister.class).to(OutputOrderAggregator.class);
-
-		//
-		
 		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
 		bind(new TypeLiteral<Parser<TagValueMessage>>(){}).to(new TypeLiteral<TagValueParser<TagValueMessage>>(){});
-		
 		bind(new TypeLiteral<OrderBook<TagValueMessage>>(){}).to(OrderBookImpl.class);
 		bind(new TypeLiteral<InstrumentsMatcher<TagValueMessage>>(){}).to(InstrumentMatcherImpl.class);
 		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Persister.class).to(IncomingOrderPersister.class);
 		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Unmarshaller.class).to(IncomingOrderUnmarshaller.class);
 		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Matcher.class).to(MatcherConsumer.class);
+		//
+		
 		//Producer dependency injection 
 		bind(new TypeLiteral<EventTranslatorOneArg<IncomingOrderEvent, byte[]>>(){}).to(IncomingOrderTranslator.class);
 		bind(new TypeLiteral<EventTranslatorOneArg<OrderOutputEvent, ExecutedOrder>>(){}).to(OutputOrderTranslator.class);
@@ -132,6 +143,13 @@ public class DisruptorModule extends AbstractModule
 		symbolToAggregation.put("aaa", new OrderAggregation());
 		return symbolToAggregation;
 	}
+	@Provides
+	@Singleton
+	public ConcurrentHashMap<String, IoSession> getClientIdToSessionMap()
+	{
+		ConcurrentHashMap<String, IoSession> clientIdToSessionMap = new ConcurrentHashMap<String, IoSession>();
+		return clientIdToSessionMap;
+	}
 	
 	@Inject
 	@Provides
@@ -167,6 +185,21 @@ public class DisruptorModule extends AbstractModule
 		
 		symbolToOrderBook.put(symbol, orderBook);
 		return symbolToOrderBook;
+	}
+	
+	@Singleton
+	@Provides
+	@Inject
+	public IoAcceptor getIoAcceptor(IoHandlerAdapter ioHandlerAdapter) throws IOException
+	{
+        IoAcceptor acceptor = new NioSocketAcceptor();
+        acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter( new TextLineCodecFactory( Charset.forName( "US-ASCII" ))));
+        acceptor.setHandler(  ioHandlerAdapter );
+        acceptor.getSessionConfig().setReadBufferSize( 2048 );
+        acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, 10 );
+        acceptor.bind( new InetSocketAddress(9123) );
+		return acceptor;
+
 	}
 	
 	@Singleton

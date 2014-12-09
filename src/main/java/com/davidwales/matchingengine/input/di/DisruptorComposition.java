@@ -1,5 +1,6 @@
 package com.davidwales.matchingengine.input.di;
 
+import org.apache.mina.core.service.IoAcceptor;
 import org.java_websocket.server.WebSocketServer;
 
 import com.davidwales.matchingengine.input.event.DisruptorProducer;
@@ -16,15 +17,16 @@ public class DisruptorComposition
 	private final DisruptorProducer<IncomingOrderEvent, byte[]> producer;
 	
 	private final WebSocketServer webSocketServer;
-/*	AggregatorServer s = new AggregatorServer( 8887 );
-	s.start();	*/
+	
+	private final IoAcceptor ioAcceptor;
 	
 	@Inject
-	public DisruptorComposition(Disruptor<IncomingOrderEvent> inputDisruptor, DisruptorProducer<IncomingOrderEvent, byte[]> producer, WebSocketServer webSocketServer)
+	public DisruptorComposition(Disruptor<IncomingOrderEvent> inputDisruptor, DisruptorProducer<IncomingOrderEvent, byte[]> producer, WebSocketServer webSocketServer, IoAcceptor ioAcceptor)
 	{
 		this.inputDisruptor = inputDisruptor;
 		this.producer = producer;
 		this.webSocketServer = webSocketServer;
+		this.ioAcceptor = ioAcceptor;
 	}
 	
     public void onData(byte[] bb)
