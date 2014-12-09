@@ -18,7 +18,6 @@ public class OrderOutputProducer implements DisruptorProducer<OrderOutputEvent, 
 	@Inject
     public OrderOutputProducer(Disruptor<OrderOutputEvent> disruptor,  EventTranslatorOneArg<OrderOutputEvent, ExecutedOrder> translator)
     {
-    	//TODO look into Guice to do this, currently hard to test
         this.ringBuffer = disruptor.getRingBuffer();
         this.translator = translator;
     }

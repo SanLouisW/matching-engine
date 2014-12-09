@@ -33,7 +33,6 @@ public class AggregatorServer extends WebSocketServer
 	@Override
 	public void onClose( WebSocket conn, int code, String reason, boolean remote )
 	{
-		conn.send("Connection closed");
 	}
 	
 	

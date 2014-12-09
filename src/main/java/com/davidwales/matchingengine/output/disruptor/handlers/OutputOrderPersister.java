@@ -10,7 +10,6 @@ public class OutputOrderPersister implements EventHandler<OrderOutputEvent>
 	public void onEvent(OrderOutputEvent event, long sequence, boolean endOfBatch) throws Exception 
 	{
 		System.out.println("order Persister thread");
-		
 	}
 
 }

@@ -4,7 +4,5 @@ import com.davidwales.matchingengine.messages.TagValueMessage;
 
 public interface ExecutedOrderOutput 
 {
-	void put(TagValueMessage message);
-	
-	void put(TagValueMessage buyMessage, TagValueMessage sellMessage);
+	void put(TagValueMessage message, OrderStatus oldStatus, OrderStatus newStatus, int quantity, int price);
 }

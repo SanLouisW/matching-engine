@@ -7,6 +7,7 @@ import com.google.inject.Inject;
 
 public class OrderBookImpl implements OrderBook<TagValueMessage>
 {
+	
 	PriorityQueue<TagValueMessage> buyQueue;
 	
 	PriorityQueue<TagValueMessage> sellQueue;
@@ -24,7 +25,7 @@ public class OrderBookImpl implements OrderBook<TagValueMessage>
 	@Override
 	public void put(TagValueMessage message)
 	{
-		executedOrderOutput.put(message);
+		executedOrderOutput.put(message, OrderStatus.NA, OrderStatus.NEW, message.getQuantity(), message.getPrice());
 		
 		if(message.getBuy())
 		{
@@ -39,16 +40,40 @@ public class OrderBookImpl implements OrderBook<TagValueMessage>
 	@Override
 	public void attemptMatch()
 	{
+		
 		TagValueMessage buy = buyQueue.peek();
 		TagValueMessage sell = sellQueue.peek();
 		
-		if(buy != null && sell != null && 
-				buy.getPrice() <= sell.getPrice())
+		if(buy != null && sell != null) 
 		{
-			executedOrderOutput.put(buy, sell);
-			buyQueue.remove(buy);
-			buyQueue.remove(sell);
-			attemptMatch();
+			int amountToStatisfy = buy.getQuantity() - sell.getQuantity();
+			
+			if(amountToStatisfy > 0)
+			{
+				OrderStatus newBuyStatus = buy.isFilled(amountToStatisfy) ? OrderStatus.FILLED : OrderStatus.PARTIAL;
+				OrderStatus newSellStatus = sell.isFilled(amountToStatisfy) ? OrderStatus.FILLED : OrderStatus.PARTIAL;
+				
+				executedOrderOutput.put(buy, buy.getOrderStatus(), newBuyStatus, buy.getQuantity(), buy.getPrice());
+				executedOrderOutput.put(sell, sell.getOrderStatus(), newSellStatus, sell.getQuantity(), sell.getPrice());
+				
+				buy.setOrderStatus(newBuyStatus);
+				sell.setOrderStatus(newSellStatus);
+				
+				if(newBuyStatus == OrderStatus.FILLED)
+				{
+					buyQueue.remove(buy);
+					
+				}
+				if(newSellStatus == OrderStatus.FILLED)
+				{
+					sellQueue.remove(sell);
+				}
+				
+				if(newSellStatus == OrderStatus.FILLED || newBuyStatus == OrderStatus.FILLED )
+				{
+					attemptMatch();
+				}
+			}
 		}
 	}
 	

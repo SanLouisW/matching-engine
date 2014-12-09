@@ -41,6 +41,8 @@ import com.davidwales.matchingengine.output.disruptor.handlers.AggregatorServer;
 import com.davidwales.matchingengine.output.disruptor.handlers.OrderAggregation;
 import com.davidwales.matchingengine.output.disruptor.handlers.OutputOrderAggregator;
 import com.davidwales.matchingengine.output.disruptor.handlers.OutputOrderPersister;
+import com.davidwales.matchingengine.output.disruptor.handlers.aggregators.AggregatorTranslator;
+import com.davidwales.matchingengine.output.disruptor.handlers.aggregators.AggregatorTranslatorImpl;
 import com.davidwales.matchingengine.parser.Parser;
 import com.davidwales.matchingengine.parser.TagValueParser;
 import com.davidwales.matchingengine.priorityqueues.ExecutedOrderOutput;
@@ -70,6 +72,7 @@ public class DisruptorModule extends AbstractModule
 		bind(TagValueMessageFactory.class).to(FixTagValueMessageFactory.class);
 		bind(ExecutedOrderFactory.class).to(ExecuteOrderFactoryImpl.class);
 		bind(ExecutedOrderOutput.class).to(MatchingEventOutputDisruptor.class);
+		bind(AggregatorTranslator.class).to(AggregatorTranslatorImpl.class);
 		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
 		
 		//Here be dragons
@@ -172,6 +175,7 @@ public class DisruptorModule extends AbstractModule
 	{
 		DataType[] dataTypes = new DataType[500];
 		Arrays.fill(dataTypes, DataType.NA);
+		dataTypes[38] = DataType.INTEGER;
 		dataTypes[55] = DataType.STRING;
 		dataTypes[54] = DataType.CHAR;
 		dataTypes[44] = DataType.INTEGER;

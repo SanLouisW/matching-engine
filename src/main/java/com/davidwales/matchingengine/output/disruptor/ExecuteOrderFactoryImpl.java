@@ -1,22 +1,20 @@
 package com.davidwales.matchingengine.output.disruptor;
 
-import com.davidwales.matchingengine.messages.TagValueMessageFactory;
-import com.google.inject.Inject;
+import com.davidwales.matchingengine.messages.TagValueMessage;
+import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 
 public class ExecuteOrderFactoryImpl implements ExecutedOrderFactory 
 {
 	
-	private TagValueMessageFactory tagValueMessageFactory;
-	
-	@Inject
-	public ExecuteOrderFactoryImpl(TagValueMessageFactory tagValueMessageFactory)
+	@Override
+	public ExecutedOrder newInstance(TagValueMessage message, OrderStatus oldStatus, OrderStatus newStatus, int quantity, int price)
 	{
-		this.tagValueMessageFactory = tagValueMessageFactory;
+		return new ExecutedOrderImpl(oldStatus, newStatus, new String(message.getSymbol()), quantity, price , message.getBuy());
 	}
-	
-	public ExecutedOrder newInstance()
+
+	@Override
+	public ExecutedOrder newInstance() 
 	{
-		
-		return new ExecutedOrderImpl(tagValueMessageFactory.newInstance(), tagValueMessageFactory.newInstance());
+		return new ExecutedOrderImpl();
 	}
 }

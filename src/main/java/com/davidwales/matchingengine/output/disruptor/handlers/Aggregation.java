@@ -1,5 +1,10 @@
 package com.davidwales.matchingengine.output.disruptor.handlers;
 
-public interface Aggregation {
-	public void incrementNews();
+import com.davidwales.matchingengine.output.disruptor.ExecutedOrder;
+
+public interface Aggregation 
+{
+	
+	public void incrementDecrementAggregation(ExecutedOrder executedOrder);
+	
 }

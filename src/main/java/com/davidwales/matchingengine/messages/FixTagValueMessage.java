@@ -5,6 +5,7 @@ import com.carrotsearch.hppc.IntCharOpenHashMap;
 import com.carrotsearch.hppc.IntIntOpenHashMap;
 import com.carrotsearch.hppc.IntLongOpenHashMap;
 import com.carrotsearch.hppc.IntObjectOpenHashMap;
+import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 
 public class FixTagValueMessage implements TagValueMessage
 {
@@ -19,6 +20,8 @@ public class FixTagValueMessage implements TagValueMessage
 	final private IntCharOpenHashMap charMap;
 	
 	final public DataType[] tagToDataTypes;
+	
+	OrderStatus status;
 
 	public FixTagValueMessage(IntIntOpenHashMap intMap, IntLongOpenHashMap longMap, IntObjectOpenHashMap<char[]> stringMap, IntByteOpenHashMap byteMap, IntCharOpenHashMap charMap, DataType[] tagToDataTypes)
 	{
@@ -28,6 +31,7 @@ public class FixTagValueMessage implements TagValueMessage
 		this.byteMap = byteMap;
 		this.charMap = charMap;
 		this.tagToDataTypes = tagToDataTypes;
+		this.status = OrderStatus.NEW;
 	}
 
 	@Override
@@ -97,6 +101,12 @@ public class FixTagValueMessage implements TagValueMessage
 	{
 		return intMap.get(44);
 	}
+	
+	@Override
+	public int getQuantity() 
+	{
+		return intMap.get(38);
+	}
 
 	@Override
 	public boolean getBuy() 
@@ -110,11 +120,35 @@ public class FixTagValueMessage implements TagValueMessage
 		return stringMap.get(55);
 	}
 
+	@Override 
+	public OrderStatus getOrderStatus()
+	{
+		return this.status;
+	}
+	@Override 
+	public void setOrderStatus(OrderStatus status)
+	{
+		this.status = status;
+	}
+	
+	@Override 
+	public boolean isFilled(int decrement)
+	{
+		if(decrement > 0)
+		{
+			int quantity = intMap.get(38);
+			intMap.put(38, quantity-decrement);
+			return quantity-decrement <= 0;
+		}
+		else
+		{
+			return false;
+		}
+	}
 
 	@Override
 	public DataType getTagDataType(int tag) 
 	{
 		return tagToDataTypes[tag];
 	}
-	
 }

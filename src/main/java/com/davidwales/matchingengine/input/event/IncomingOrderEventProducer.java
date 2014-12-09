@@ -1,10 +1,7 @@
 package com.davidwales.matchingengine.input.event;
 
-import com.corundumstudio.socketio.AckRequest;
-import com.corundumstudio.socketio.Configuration;
-import com.corundumstudio.socketio.SocketIOClient;
-import com.corundumstudio.socketio.SocketIOServer;
-import com.corundumstudio.socketio.listener.DataListener;
+import javax.security.auth.login.Configuration;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.lmax.disruptor.EventTranslatorOneArg;
@@ -34,16 +31,6 @@ public class IncomingOrderEventProducer implements DisruptorProducer<IncomingOrd
 	@Override
 	public void run() {
  
-		Configuration config = new Configuration();
-		config.setHostname("localhost");
-		config.setPort(9092);
-		final SocketIOServer server = new SocketIOServer(config);
-		server.addEventListener("msg", byte[].class, new DataListener<byte[]>() {
-			 @Override
-			 public void onData(SocketIOClient client, byte[] data, AckRequest ackRequest) {
-				 client.sendEvent("msg", data);
-			 }
-		});
 		
 	}
 

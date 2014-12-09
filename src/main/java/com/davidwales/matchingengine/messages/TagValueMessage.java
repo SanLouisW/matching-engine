@@ -1,5 +1,7 @@
 package com.davidwales.matchingengine.messages;
 
+import com.davidwales.matchingengine.priorityqueues.OrderStatus;
+
 public interface TagValueMessage {
 	
 	void putInt(int val, int tag);
@@ -28,6 +30,15 @@ public interface TagValueMessage {
 	
 	char[] getSymbol();
 	
+	int getQuantity();
+	
 	DataType getTagDataType(int tag);
+	
+	void setOrderStatus(OrderStatus status);
+	
+	public boolean isFilled(int decrement);
+	
+	OrderStatus getOrderStatus();
+	
 
 }

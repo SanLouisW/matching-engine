@@ -1,42 +1,67 @@
 package com.davidwales.matchingengine.output.disruptor;
 
-import com.davidwales.matchingengine.messages.TagValueMessage;
-import com.davidwales.matchingengine.messages.TagValueMessageFactory;
-import com.google.inject.Inject;
+import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 
 public class ExecutedOrderImpl implements ExecutedOrder
 {
 
-	private TagValueMessage primaryOrder;
+	OrderStatus oldStatus;
 	
-	private TagValueMessage secondaryOrder;
+	OrderStatus newStatus;
 	
-	ExecutedOrderImpl(TagValueMessage primaryOrder, TagValueMessage secondaryOrder)
+	String symbol;
+	
+	int quantity;
+	
+	int price;
+	
+	boolean buy;
+	
+	ExecutedOrderImpl(){}
+	
+	ExecutedOrderImpl(OrderStatus oldStatus, OrderStatus newStatus, String symbol, int quantity, int price, boolean buy)
 	{
-		this.primaryOrder = primaryOrder;
-		this.secondaryOrder = secondaryOrder;
+		this.oldStatus = oldStatus;
+		this.newStatus = newStatus;
+		this.symbol = symbol;
+		this.quantity = quantity;
+		this.price = price;
 	}
 
 	@Override
-	public TagValueMessage getPrimaryOrder() 
+	public OrderStatus getOldStatus() 
 	{
-		return primaryOrder;
-	}
-
-	public void setPrimaryOrder(TagValueMessage primaryOrder) 
-	{
-		this.primaryOrder = primaryOrder;
+		return this.oldStatus;
 	}
 
 	@Override
-	public TagValueMessage getSecondaryOrder() 
+	public OrderStatus getNewStatus() 
 	{
-		return secondaryOrder;
+		return this.newStatus;
 	}
 
-	public void setSecondaryOrder(TagValueMessage secondaryOrder) 
+	@Override
+	public String getSymbol() 
 	{
-		this.secondaryOrder = secondaryOrder;
+		return this.symbol;
+	}
+
+	@Override
+	public int getQuantity() 
+	{
+		return this.quantity;
+	}
+
+	@Override
+	public int getPrice() 
+	{
+		return this.price;
+	}
+
+	@Override
+	public boolean getBuy() 
+	{
+		return this.buy;
 	}
 	
 }
