@@ -18,7 +18,11 @@ public class IncomingOrderUnmarshaller implements EventHandler<IncomingOrderEven
 	
 	public void onEvent(IncomingOrderEvent arg0, long arg1, boolean arg2) throws Exception 
 	{
-		parser.parseData(arg0.getRawData(), arg0.getUnmarshalledMessage());
+		TagValueMessage message = arg0.getUnmarshalledMessage();
+		byte[] rawData = arg0.getRawData();
+		
+		parser.parseData(rawData, message);
+		message.setAssociatedSession(arg0.getSession());
 	}
 
 }

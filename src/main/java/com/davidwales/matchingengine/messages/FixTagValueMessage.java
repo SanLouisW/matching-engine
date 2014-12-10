@@ -1,5 +1,7 @@
 package com.davidwales.matchingengine.messages;
 
+import org.apache.mina.core.session.IoSession;
+
 import com.carrotsearch.hppc.IntByteOpenHashMap;
 import com.carrotsearch.hppc.IntCharOpenHashMap;
 import com.carrotsearch.hppc.IntIntOpenHashMap;
@@ -21,6 +23,10 @@ public class FixTagValueMessage implements TagValueMessage
 	
 	final public DataType[] tagToDataTypes;
 	
+	private volatile boolean isValid;
+	
+	private IoSession associatedSession;
+	
 	OrderStatus status;
 
 	public FixTagValueMessage(IntIntOpenHashMap intMap, IntLongOpenHashMap longMap, IntObjectOpenHashMap<char[]> stringMap, IntByteOpenHashMap byteMap, IntCharOpenHashMap charMap, DataType[] tagToDataTypes)
@@ -32,8 +38,15 @@ public class FixTagValueMessage implements TagValueMessage
 		this.charMap = charMap;
 		this.tagToDataTypes = tagToDataTypes;
 		this.status = OrderStatus.NEW;
+		this.isValid = false;
 	}
 
+	@Override
+	public boolean getIsValid()
+	{
+		return this.isValid;
+	}
+	
 	@Override
 	public void putInt(int val, int tag) 
 	{
@@ -156,5 +169,27 @@ public class FixTagValueMessage implements TagValueMessage
 	public DataType getTagDataType(int tag) 
 	{
 		return tagToDataTypes[tag];
+	}
+	
+	@Override
+	public void validate()
+	{
+		this.isValid = intMap.get(38) != 0 &&
+					   intMap.get(44) != 0 &&
+					   stringMap.get(109)  != null &&
+					   charMap.get(54) != '\u0000' &&
+		               stringMap.get(55) != null;
+	}
+
+	@Override
+	public IoSession getAssociatedSession() 
+	{
+		return associatedSession;
+	}
+
+	@Override
+	public void setAssociatedSession(IoSession associatedSession) 
+	{
+		this.associatedSession = associatedSession;
 	}
 }

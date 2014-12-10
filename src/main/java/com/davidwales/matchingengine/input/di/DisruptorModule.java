@@ -75,6 +75,7 @@ import com.google.inject.TypeLiteral;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.EventTranslatorOneArg;
+import com.lmax.disruptor.EventTranslatorTwoArg;
 import com.lmax.disruptor.dsl.Disruptor;
 
 public class DisruptorModule extends AbstractModule 
@@ -107,7 +108,7 @@ public class DisruptorModule extends AbstractModule
 		//
 		
 		//Producer dependency injection 
-		bind(new TypeLiteral<EventTranslatorOneArg<IncomingOrderEvent, byte[]>>(){}).to(IncomingOrderTranslator.class);
+		bind(new TypeLiteral<EventTranslatorTwoArg<IncomingOrderEvent, byte[], IoSession>>(){}).to(IncomingOrderTranslator.class);
 		bind(new TypeLiteral<EventTranslatorOneArg<OrderOutputEvent, ExecutedOrder>>(){}).to(OutputOrderTranslator.class);
 		
 		bind(new TypeLiteral<DisruptorProducer<IncomingOrderEvent, byte[]>>(){}).to(IncomingOrderEventProducer.class);
@@ -148,13 +149,6 @@ public class DisruptorModule extends AbstractModule
 		symbolToAggregation.put("global", new OrderAggregation());
 		symbolToAggregation.put("aaa", new OrderAggregation());
 		return symbolToAggregation;
-	}
-	@Provides
-	@Singleton
-	public ConcurrentHashMap<String, IoSession> getClientIdToSessionMap()
-	{
-		ConcurrentHashMap<String, IoSession> clientIdToSessionMap = new ConcurrentHashMap<String, IoSession>();
-		return clientIdToSessionMap;
 	}
 	
 	@Inject

@@ -1,8 +1,10 @@
 package com.davidwales.matchingengine.input.event;
 
+import org.apache.mina.core.session.IoSession;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.lmax.disruptor.EventTranslatorOneArg;
+import com.lmax.disruptor.EventTranslatorTwoArg;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 
@@ -12,19 +14,20 @@ public class IncomingOrderEventProducer implements DisruptorProducer<IncomingOrd
 	
     private final RingBuffer<IncomingOrderEvent> ringBuffer;
 
-    private final EventTranslatorOneArg<IncomingOrderEvent, byte[]> translator;
+    private final EventTranslatorTwoArg<IncomingOrderEvent, byte[], IoSession> translator;
     
     @Inject
-    public IncomingOrderEventProducer(Disruptor<IncomingOrderEvent> disruptor, EventTranslatorOneArg<IncomingOrderEvent, byte[]> translator)
+    public IncomingOrderEventProducer(Disruptor<IncomingOrderEvent> disruptor, EventTranslatorTwoArg<IncomingOrderEvent, byte[], IoSession> translator)
     {
     	//TODO look into Guice to do this, currently hard to test
         this.ringBuffer = disruptor.getRingBuffer();
         this.translator = translator;
     }
 
-    public void onData(byte[] bb)
+    //TODO neaten this up, hack for now
+    public void onData(byte[] bb, Object session)
     {   
-        ringBuffer.publishEvent(translator, bb);
+        ringBuffer.publishEvent(translator, bb, (IoSession)session);
     }
 
 	@Override

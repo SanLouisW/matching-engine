@@ -28,9 +28,5 @@ public class DisruptorComposition
 		this.webSocketServer = webSocketServer;
 		this.ioAcceptor = ioAcceptor;
 	}
-	
-    public void onData(byte[] bb)
-    {
-    	producer.onData(bb);
-    }
+
 }

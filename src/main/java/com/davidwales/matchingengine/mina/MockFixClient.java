@@ -37,6 +37,5 @@ public class MockFixClient
 		session.getCloseFuture().awaitUninterruptibly();
 		System.out.println("After Writing");
 		connector.dispose();
-	 
 	}
 }

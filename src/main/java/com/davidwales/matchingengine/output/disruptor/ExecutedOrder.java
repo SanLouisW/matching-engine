@@ -1,5 +1,7 @@
 package com.davidwales.matchingengine.output.disruptor;
 
+import org.apache.mina.core.session.IoSession;
+
 import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 
 public interface ExecutedOrder 
@@ -18,5 +20,11 @@ public interface ExecutedOrder
 	public boolean getBuy();
 	
 	public String getClientId();
+	
+	public IoSession getSession();
+	
+	public boolean isValidOrder();
+	
+	public void respond(String response);
 
 }

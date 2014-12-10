@@ -3,10 +3,14 @@ package com.davidwales.matchingengine.priorityqueues;
 import java.util.PriorityQueue;
 
 import com.davidwales.matchingengine.messages.TagValueMessage;
+import com.davidwales.matchingengine.output.disruptor.ExecutedOrder;
+import com.davidwales.matchingengine.output.disruptor.ExecutedOrderFactory;
 import com.google.inject.Inject;
 
 public class OrderBookImpl implements OrderBook<TagValueMessage>
 {
+	
+	private final ExecutedOrderFactory executedOrderFactory;
 	
 	private PriorityQueue<TagValueMessage> buyQueue;
 	
@@ -15,17 +19,19 @@ public class OrderBookImpl implements OrderBook<TagValueMessage>
 	private ExecutedOrderOutput executedOrderOutput;
 	
 	@Inject
-	public OrderBookImpl(PriorityQueue<TagValueMessage> sellQueue, PriorityQueue<TagValueMessage> buyQueue, ExecutedOrderOutput executedOrderOutput)
+	public OrderBookImpl(PriorityQueue<TagValueMessage> sellQueue, PriorityQueue<TagValueMessage> buyQueue, ExecutedOrderOutput executedOrderOutput, ExecutedOrderFactory executedOrderFactory)
 	{
 		this.buyQueue = buyQueue; 
 		this.sellQueue = sellQueue; 
 		this.executedOrderOutput = executedOrderOutput;
+		this.executedOrderFactory = executedOrderFactory;
 	}
 	
 	@Override
 	public void put(TagValueMessage message)
 	{
-		executedOrderOutput.put(message, OrderStatus.NA, OrderStatus.NEW, message.getQuantity(), message.getPrice());
+		ExecutedOrder newOrder = executedOrderFactory.newInstance(message, OrderStatus.NA, OrderStatus.NEW, message.getQuantity(), message.getPrice());
+		executedOrderOutput.put(newOrder);
 		
 		if(message.getBuy())
 		{
@@ -53,8 +59,8 @@ public class OrderBookImpl implements OrderBook<TagValueMessage>
 				OrderStatus newBuyStatus = buy.isFilled(amountToStatisfy) ? OrderStatus.FILLED : OrderStatus.PARTIAL;
 				OrderStatus newSellStatus = sell.isFilled(amountToStatisfy) ? OrderStatus.FILLED : OrderStatus.PARTIAL;
 				
-				executedOrderOutput.put(buy, buy.getOrderStatus(), newBuyStatus, buy.getQuantity(), buy.getPrice());
-				executedOrderOutput.put(sell, sell.getOrderStatus(), newSellStatus, sell.getQuantity(), sell.getPrice());
+				executedOrderOutput.put(executedOrderFactory.newInstance(buy, buy.getOrderStatus(), newBuyStatus, buy.getQuantity(), buy.getPrice()));
+				executedOrderOutput.put(executedOrderFactory.newInstance(sell, sell.getOrderStatus(), newSellStatus, sell.getQuantity(), sell.getPrice()));
 				
 				buy.setOrderStatus(newBuyStatus);
 				sell.setOrderStatus(newSellStatus);

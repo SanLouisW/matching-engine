@@ -10,25 +10,24 @@ import com.lmax.disruptor.dsl.Disruptor;
 public class MatchingEventOutputDisruptor implements ExecutedOrderOutput
 {
 	
-	private final ExecutedOrderFactory executedOrderFactory;
 	
 	private final Disruptor<OrderOutputEvent> outputDisruptor;
 	
 	private final DisruptorProducer<OrderOutputEvent, ExecutedOrder> producer;
 	
 	@Inject
-	public MatchingEventOutputDisruptor(Disruptor<OrderOutputEvent> outputDisruptor, DisruptorProducer<OrderOutputEvent, ExecutedOrder> producer, ExecutedOrderFactory executedOrderFactory)
+	public MatchingEventOutputDisruptor(Disruptor<OrderOutputEvent> outputDisruptor, DisruptorProducer<OrderOutputEvent, ExecutedOrder> producer)
 	{
 		this.outputDisruptor = outputDisruptor;
 		this.producer = producer;
-		this.executedOrderFactory = executedOrderFactory;
 		
 	}
 	
 	@Override
-	public void put(TagValueMessage message, OrderStatus oldStatus, OrderStatus newStatus, int quantity, int price)
+	public void put(ExecutedOrder executedOrder)
 	{
-		producer.onData(executedOrderFactory.newInstance(message, oldStatus, newStatus, quantity, price));
+		//TODO Haaaaaaaaaack
+		producer.onData(executedOrder, null);
 	}
 	
 }

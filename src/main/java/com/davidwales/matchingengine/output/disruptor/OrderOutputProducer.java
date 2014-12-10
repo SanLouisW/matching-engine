@@ -2,7 +2,6 @@ package com.davidwales.matchingengine.output.disruptor;
 
 import com.davidwales.matchingengine.input.event.DisruptorProducer;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.lmax.disruptor.EventTranslatorOneArg;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
@@ -29,7 +28,7 @@ public class OrderOutputProducer implements DisruptorProducer<OrderOutputEvent, 
 	}
 
 	@Override
-	public void onData(ExecutedOrder executedOrder) 
+	public void onData(ExecutedOrder executedOrder, Object hack) 
 	{
 		ringBuffer.publishEvent(translator, executedOrder);
 	}

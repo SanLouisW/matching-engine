@@ -21,6 +21,9 @@ public class AggregatorTranslatorImpl implements AggregatorTranslator
 	@Override
 	public void aggregateOrder(ExecutedOrder executedOrder)
 	{
-		symbolToAggregation.get(executedOrder.getSymbol()).incrementDecrementAggregation(executedOrder);
+		if(executedOrder.isValidOrder())
+		{
+			symbolToAggregation.get(executedOrder.getSymbol()).incrementDecrementAggregation(executedOrder);
+		}
 	}
 }

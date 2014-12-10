@@ -8,35 +8,44 @@ import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 public class TagValueParser<T extends TagValueMessage> implements Parser<T> 
 {
 	
-	public void parseData(byte[] rawData, T parsedMessage) throws Exception
+	public void parseData(byte[] rawData, T parsedMessage)
 	{
 		int tag = 0;
 		int start = 0;
 		int end = 1;
-		
-		for(int i = 0; i < rawData.length; i++ )
+		try
 		{
-			if(rawData[i] == '|' || rawData[i] == '\n')
+			for(int i = 0; i < rawData.length; i++ )
 			{
-				end = i;
-				processValue(rawData, start, end, tag, parsedMessage);
-				start = end + 1;
-			}
-			else if(rawData[i] == '=')
-			{
-				end = i;
-				tag = processTag(rawData, start, end);
-				start = end + 1;
+				if(rawData[i] == '|' || rawData[i] == '\n')
+				{
+					end = i;
+					processValue(rawData, start, end, tag, parsedMessage);
+					start = end + 1;
+				}
+				else if(rawData[i] == '=')
+				{
+					end = i;
+					tag = processTag(rawData, start, end);
+					start = end + 1;
+				}
 			}
 		}
+		catch(Exception exception)
+		{
+		
+			//TODO implement proper exception handling
+			System.out.println("exception parsing message");
+		}
+		parsedMessage.validate();
 	}
 	
-	public int processTag(byte[] data, int start, int end) throws Exception
+	public int processTag(byte[] data, int start, int end) 
 	{
 		return processInt(data, start, end);
 	}
 	
-	public void processValue(byte[] data, int start, int end, int tag, T parsedMessage) throws Exception
+	public void processValue(byte[] data, int start, int end, int tag, T parsedMessage)
 	{
 		DataType dataTypeToParseTo = parsedMessage.getTagDataType(tag);
 		
@@ -63,7 +72,7 @@ public class TagValueParser<T extends TagValueMessage> implements Parser<T>
 				parsedMessage.putChar(charVal, tag);
 				break;
 			default:
-				throw new IllegalStateException("Cannot find parser");
+				System.out.println("Can't find datatype for this tag");
 		}	
 	}
 	

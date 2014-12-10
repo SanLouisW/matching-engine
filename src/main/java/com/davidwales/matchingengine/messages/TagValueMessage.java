@@ -1,5 +1,7 @@
 package com.davidwales.matchingengine.messages;
 
+import org.apache.mina.core.session.IoSession;
+
 import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 
 public interface TagValueMessage {
@@ -41,6 +43,14 @@ public interface TagValueMessage {
 	public boolean isFilled(int decrement);
 	
 	public OrderStatus getOrderStatus();
+
+	boolean getIsValid();
+	
+	public void validate();
+
+	IoSession getAssociatedSession();
+
+	void setAssociatedSession(IoSession associatedSession);
 	
 
 }

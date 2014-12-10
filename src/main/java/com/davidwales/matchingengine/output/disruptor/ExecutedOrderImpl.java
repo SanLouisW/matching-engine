@@ -1,27 +1,33 @@
 package com.davidwales.matchingengine.output.disruptor;
 
+import org.apache.mina.core.session.IoSession;
+
 import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 
 public class ExecutedOrderImpl implements ExecutedOrder
 {
 
-	public OrderStatus oldStatus;
+	private OrderStatus oldStatus;
 	
-	public OrderStatus newStatus;
+	private OrderStatus newStatus;
 	
-	public String symbol;
+	private String symbol;
 	
-	public String clientId;
+	private String clientId;
 	
-	public int quantity;
+	private int quantity;
 	
-	public int price;
+	private int price;
 	
-	public boolean buy;
+	private boolean buy;
+	
+	private boolean isValid;
+	
+	private IoSession session;
 	
 	ExecutedOrderImpl(){}
 	
-	ExecutedOrderImpl(OrderStatus oldStatus, OrderStatus newStatus, String symbol, int quantity, int price, boolean buy, String clientId)
+	public ExecutedOrderImpl(OrderStatus oldStatus, OrderStatus newStatus, String symbol, int quantity, int price, boolean buy, String clientId, IoSession session)
 	{
 		this.oldStatus = oldStatus;
 		this.newStatus = newStatus;
@@ -29,6 +35,14 @@ public class ExecutedOrderImpl implements ExecutedOrder
 		this.quantity = quantity;
 		this.price = price;
 		this.clientId = clientId;
+		this.isValid = true;
+		this.session = session;
+	}
+	
+	public ExecutedOrderImpl(boolean isValid, IoSession session)
+	{
+		this.isValid = isValid;
+		this.session = session;
 	}
 
 	@Override
@@ -72,5 +86,22 @@ public class ExecutedOrderImpl implements ExecutedOrder
 	{
 		return this.clientId;
 	}
-	
+
+	@Override
+	public IoSession getSession() {
+		return this.session;
+	}
+
+
+	@Override
+	public boolean isValidOrder() {
+		return this.isValid;
+	}
+
+	@Override
+	public void respond(String response)
+	{
+		this.session.write(response);
+	}
+
 }
