@@ -37,6 +37,7 @@ public class TagValueParser<T extends TagValueMessage> implements Parser<T>
 			//TODO implement proper exception handling
 			System.out.println("exception parsing message");
 		}
+		
 		parsedMessage.validate();
 	}
 	

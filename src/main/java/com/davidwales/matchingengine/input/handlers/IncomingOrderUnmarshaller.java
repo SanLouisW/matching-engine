@@ -22,7 +22,6 @@ public class IncomingOrderUnmarshaller implements EventHandler<IncomingOrderEven
 		byte[] rawData = arg0.getRawData();
 		
 		parser.parseData(rawData, message);
-		message.setAssociatedSession(arg0.getSession());
 	}
 
 }

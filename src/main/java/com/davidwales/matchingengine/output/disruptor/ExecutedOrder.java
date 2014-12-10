@@ -25,6 +25,6 @@ public interface ExecutedOrder
 	
 	public boolean isValidOrder();
 	
-	public void respond(String response);
+	public void respond();
 
 }

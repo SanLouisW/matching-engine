@@ -1,5 +1,7 @@
 package com.davidwales.matchingengine.output.disruptor;
 
+import org.apache.mina.core.session.IoSession;
+
 import com.davidwales.matchingengine.messages.TagValueMessage;
 import com.davidwales.matchingengine.priorityqueues.OrderStatus;
 
@@ -7,9 +9,9 @@ public class ExecuteOrderFactoryImpl implements ExecutedOrderFactory
 {
 	
 	@Override
-	public ExecutedOrder newInstance(TagValueMessage message, OrderStatus oldStatus, OrderStatus newStatus, int quantity, int price)
+	public ExecutedOrder newInstance(IoSession session, OrderStatus oldStatus, OrderStatus newStatus, String symbol, int quantity, int price, boolean buy, String clientId)
 	{
-		return new ExecutedOrderImpl(oldStatus, newStatus, new String(message.getSymbol()), quantity, price , message.getBuy(), new String(message.getClientId()), message.getAssociatedSession());
+		return new ExecutedOrderImpl(oldStatus, newStatus, symbol, quantity, price , buy, clientId, session);
 	}
 
 	@Override
@@ -19,8 +21,8 @@ public class ExecuteOrderFactoryImpl implements ExecutedOrderFactory
 	}
 
 	@Override
-	public ExecutedOrder invalidOrder(TagValueMessage message) 
+	public ExecutedOrder invalidOrder(IoSession session) 
 	{
-		return new ExecutedOrderImpl(false, message.getAssociatedSession());
+		return new InvalidOrderImpl(false, session);
 	}
 }

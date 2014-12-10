@@ -2,85 +2,66 @@ package com.davidwales.matchingengine.priorityqueues;
 
 import java.util.PriorityQueue;
 
+import com.davidwales.matchingengine.messagecomposition.MessageComposition;
 import com.davidwales.matchingengine.messages.TagValueMessage;
 import com.davidwales.matchingengine.output.disruptor.ExecutedOrder;
 import com.davidwales.matchingengine.output.disruptor.ExecutedOrderFactory;
 import com.google.inject.Inject;
 
-public class OrderBookImpl implements OrderBook<TagValueMessage>
+public class OrderBookImpl implements OrderBook<MessageComposition>
 {
 	
-	private final ExecutedOrderFactory executedOrderFactory;
+	private PriorityQueue<MessageComposition> buyQueue;
 	
-	private PriorityQueue<TagValueMessage> buyQueue;
+	private PriorityQueue<MessageComposition> sellQueue;
 	
-	private PriorityQueue<TagValueMessage> sellQueue;
-	
-	private ExecutedOrderOutput executedOrderOutput;
 	
 	@Inject
-	public OrderBookImpl(PriorityQueue<TagValueMessage> sellQueue, PriorityQueue<TagValueMessage> buyQueue, ExecutedOrderOutput executedOrderOutput, ExecutedOrderFactory executedOrderFactory)
+	public OrderBookImpl(PriorityQueue<MessageComposition> sellQueue, PriorityQueue<MessageComposition> buyQueue, ExecutedOrderOutput executedOrderOutput, ExecutedOrderFactory executedOrderFactory)
 	{
 		this.buyQueue = buyQueue; 
 		this.sellQueue = sellQueue; 
-		this.executedOrderOutput = executedOrderOutput;
-		this.executedOrderFactory = executedOrderFactory;
 	}
-	
+
+
 	@Override
-	public void put(TagValueMessage message)
+	public MessageComposition buyQueuePeek() 
 	{
-		ExecutedOrder newOrder = executedOrderFactory.newInstance(message, OrderStatus.NA, OrderStatus.NEW, message.getQuantity(), message.getPrice());
-		executedOrderOutput.put(newOrder);
-		
-		if(message.getBuy())
+		return this.buyQueue.peek();
+	}
+
+
+	@Override
+	public MessageComposition sellQueuePeek() 
+	{
+		return this.sellQueue.peek();
+	}
+
+
+	@Override
+	public void remove(MessageComposition messageComposition) 
+	{
+		if(messageComposition.getBuy())
 		{
-			buyQueue.add(message);
+			buyQueue.remove(messageComposition);
 		}
 		else
 		{
-			sellQueue.add(message);
+			sellQueue.remove(messageComposition);
 		}
 	}
-	
+
+
 	@Override
-	public void attemptMatch()
-	{
-		
-		TagValueMessage buy = buyQueue.peek();
-		TagValueMessage sell = sellQueue.peek();
-		
-		if(buy != null && sell != null) 
+	public void put(MessageComposition messageComposition) {
+		if(messageComposition.getBuy())
 		{
-			int amountToStatisfy = buy.getQuantity() - sell.getQuantity();
-			
-			if(amountToStatisfy > 0)
-			{
-				OrderStatus newBuyStatus = buy.isFilled(amountToStatisfy) ? OrderStatus.FILLED : OrderStatus.PARTIAL;
-				OrderStatus newSellStatus = sell.isFilled(amountToStatisfy) ? OrderStatus.FILLED : OrderStatus.PARTIAL;
-				
-				executedOrderOutput.put(executedOrderFactory.newInstance(buy, buy.getOrderStatus(), newBuyStatus, buy.getQuantity(), buy.getPrice()));
-				executedOrderOutput.put(executedOrderFactory.newInstance(sell, sell.getOrderStatus(), newSellStatus, sell.getQuantity(), sell.getPrice()));
-				
-				buy.setOrderStatus(newBuyStatus);
-				sell.setOrderStatus(newSellStatus);
-				
-				if(newBuyStatus == OrderStatus.FILLED)
-				{
-					buyQueue.remove(buy);
-					
-				}
-				if(newSellStatus == OrderStatus.FILLED)
-				{
-					sellQueue.remove(sell);
-				}
-				
-				if(newSellStatus == OrderStatus.FILLED || newBuyStatus == OrderStatus.FILLED )
-				{
-					attemptMatch();
-				}
-			}
+			buyQueue.add(messageComposition);
 		}
+		else
+		{
+			sellQueue.add(messageComposition);
+		}
+		
 	}
-	
 }

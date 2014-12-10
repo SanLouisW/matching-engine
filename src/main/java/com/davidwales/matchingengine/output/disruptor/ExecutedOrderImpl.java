@@ -21,9 +21,9 @@ public class ExecutedOrderImpl implements ExecutedOrder
 	
 	private boolean buy;
 	
-	private boolean isValid;
+	protected boolean isValid;
 	
-	private IoSession session;
+	protected IoSession session;
 	
 	ExecutedOrderImpl(){}
 	
@@ -39,11 +39,6 @@ public class ExecutedOrderImpl implements ExecutedOrder
 		this.session = session;
 	}
 	
-	public ExecutedOrderImpl(boolean isValid, IoSession session)
-	{
-		this.isValid = isValid;
-		this.session = session;
-	}
 
 	@Override
 	public OrderStatus getOldStatus() 
@@ -99,9 +94,13 @@ public class ExecutedOrderImpl implements ExecutedOrder
 	}
 
 	@Override
-	public void respond(String response)
+	public void respond()
 	{
-		this.session.write(response);
+		String fixResponse;
+		String buy = this.buy ? "1" : "2";
+		String tag39 = this.newStatus == OrderStatus.FILLED ? buy : "I";
+		fixResponse = "35=8|39=" + tag39 + "|38=" + this.quantity + "|44=" + this.price + "|55=" + this.symbol +"|";
+		this.session.write(fixResponse);
 	}
 
 }

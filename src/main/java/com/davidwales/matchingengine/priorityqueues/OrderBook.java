@@ -1,10 +1,15 @@
 package com.davidwales.matchingengine.priorityqueues;
 
-import com.davidwales.matchingengine.messages.TagValueMessage;
+import com.davidwales.matchingengine.messagecomposition.MessageComposition;
 
-public interface OrderBook<T extends TagValueMessage> {
+public interface OrderBook<T extends MessageComposition> 
+{
 
-	public void put(T message);
+	public MessageComposition buyQueuePeek();
 	
-	public void attemptMatch();
+	public MessageComposition sellQueuePeek();
+	
+	public void remove(MessageComposition messageComposition);
+	
+	public void put(MessageComposition messageComposition);
 }

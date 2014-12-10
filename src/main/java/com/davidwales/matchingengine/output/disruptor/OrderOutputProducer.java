@@ -14,7 +14,7 @@ public class OrderOutputProducer implements DisruptorProducer<OrderOutputEvent, 
 
     private final EventTranslatorOneArg<OrderOutputEvent, ExecutedOrder> translator;
     
-	@Inject
+    @Inject
     public OrderOutputProducer(Disruptor<OrderOutputEvent> disruptor,  EventTranslatorOneArg<OrderOutputEvent, ExecutedOrder> translator)
     {
         this.ringBuffer = disruptor.getRingBuffer();

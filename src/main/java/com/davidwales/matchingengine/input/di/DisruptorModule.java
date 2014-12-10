@@ -36,6 +36,10 @@ import com.davidwales.matchingengine.input.event.IncomingOrderEventProducer;
 import com.davidwales.matchingengine.input.handlers.IncomingOrderPersister;
 import com.davidwales.matchingengine.input.handlers.IncomingOrderUnmarshaller;
 import com.davidwales.matchingengine.input.handlers.MatcherConsumer;
+import com.davidwales.matchingengine.messagecomposition.MessageComposition;
+import com.davidwales.matchingengine.messagecomposition.MessageCompositionFactory;
+import com.davidwales.matchingengine.messagecomposition.MessageCompositionFactoryImpl;
+import com.davidwales.matchingengine.messagecomposition.MessageCompositionImpl;
 import com.davidwales.matchingengine.messages.DataType;
 import com.davidwales.matchingengine.messages.FixTagValueMessageFactory;
 import com.davidwales.matchingengine.messages.TagValueMessage;
@@ -59,12 +63,8 @@ import com.davidwales.matchingengine.output.disruptor.handlers.aggregators.Aggre
 import com.davidwales.matchingengine.parser.Parser;
 import com.davidwales.matchingengine.parser.TagValueParser;
 import com.davidwales.matchingengine.priorityqueues.ExecutedOrderOutput;
-import com.davidwales.matchingengine.priorityqueues.InstrumentMatcherImpl;
-import com.davidwales.matchingengine.priorityqueues.InstrumentsMatcher;
 import com.davidwales.matchingengine.priorityqueues.OrderBook;
 import com.davidwales.matchingengine.priorityqueues.OrderBookImpl;
-import com.davidwales.matchingengine.responder.MessageResponder;
-import com.davidwales.matchingengine.responder.MessageResponderImpl;
 import com.davidwales.matchingengine.translator.IncomingOrderTranslator;
 import com.davidwales.matchingengine.translator.OutputOrderTranslator;
 import com.google.inject.AbstractModule;
@@ -89,8 +89,8 @@ public class DisruptorModule extends AbstractModule
 		bind(ExecutedOrderFactory.class).to(ExecuteOrderFactoryImpl.class);
 		bind(ExecutedOrderOutput.class).to(MatchingEventOutputDisruptor.class);
 		bind(AggregatorTranslator.class).to(AggregatorTranslatorImpl.class);
-		bind(MessageResponder.class).to(MessageResponderImpl.class);
 		bind(IoHandlerAdapter.class).to(NetworkInputHandler.class);
+		bind(MessageCompositionFactory.class).to(MessageCompositionFactoryImpl.class);
 		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
 		
 		//Here be dragons
@@ -100,8 +100,7 @@ public class DisruptorModule extends AbstractModule
 		bind(new TypeLiteral<EventHandler<OrderOutputEvent>>(){}).annotatedWith(OutputPersister.class).to(OutputOrderAggregator.class);
 		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
 		bind(new TypeLiteral<Parser<TagValueMessage>>(){}).to(new TypeLiteral<TagValueParser<TagValueMessage>>(){});
-		bind(new TypeLiteral<OrderBook<TagValueMessage>>(){}).to(OrderBookImpl.class);
-		bind(new TypeLiteral<InstrumentsMatcher<TagValueMessage>>(){}).to(InstrumentMatcherImpl.class);
+		bind(new TypeLiteral<OrderBook<MessageComposition>>(){}).to(OrderBookImpl.class);
 		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Persister.class).to(IncomingOrderPersister.class);
 		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Unmarshaller.class).to(IncomingOrderUnmarshaller.class);
 		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Matcher.class).to(MatcherConsumer.class);
@@ -170,17 +169,17 @@ public class DisruptorModule extends AbstractModule
 	}
 	
 	@Provides
-	public PriorityQueue<TagValueMessage> getPriorityQueue()
+	public PriorityQueue<MessageComposition> getPriorityQueue()
 	{
-		return new PriorityQueue<TagValueMessage>(100, new TagValueMessageComparator());
+		return new PriorityQueue<MessageComposition>(100, new MessageCompositionComparator());
 	}
 	
 	@Singleton
 	@Provides
 	@Inject
-	public ObjectObjectOpenHashMap<String, OrderBook<TagValueMessage>> getSymbolToOrderBook(OrderBook<TagValueMessage> orderBook)
+	public ObjectObjectOpenHashMap<String, OrderBook<MessageComposition>> getSymbolToOrderBook(OrderBook<MessageComposition> orderBook)
 	{
-		ObjectObjectOpenHashMap<String, OrderBook<TagValueMessage>> symbolToOrderBook = ObjectObjectOpenHashMap.newInstance(1, 2);
+		ObjectObjectOpenHashMap<String, OrderBook<MessageComposition>> symbolToOrderBook = ObjectObjectOpenHashMap.newInstance(1, 2);
 		String symbol = "aaa";
 		
 		symbolToOrderBook.put(symbol, orderBook);

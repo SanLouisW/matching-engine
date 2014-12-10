@@ -181,12 +181,14 @@ public class FixTagValueMessage implements TagValueMessage
 		               stringMap.get(55) != null;
 	}
 
+	@Deprecated
 	@Override
 	public IoSession getAssociatedSession() 
 	{
 		return associatedSession;
 	}
 
+	@Deprecated
 	@Override
 	public void setAssociatedSession(IoSession associatedSession) 
 	{
