@@ -33,7 +33,6 @@ public class TagValueParser<T extends TagValueMessage> implements Parser<T>
 		}
 		catch(Exception exception)
 		{
-		
 			//TODO implement proper exception handling
 			System.out.println("exception parsing message");
 		}

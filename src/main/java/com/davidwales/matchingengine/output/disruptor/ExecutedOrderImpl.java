@@ -33,12 +33,12 @@ public class ExecutedOrderImpl implements ExecutedOrder
 		this.newStatus = newStatus;
 		this.symbol = symbol;
 		this.quantity = quantity;
+		this.buy = buy;
 		this.price = price;
 		this.clientId = clientId;
 		this.isValid = true;
 		this.session = session;
 	}
-	
 
 	@Override
 	public OrderStatus getOldStatus() 

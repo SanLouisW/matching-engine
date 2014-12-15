@@ -62,9 +62,11 @@ public class MessageCompositionImpl implements MessageComposition
 		
 		if(buy != null && sell != null) 
 		{
-			int amountToStatisfy = Math.abs(buy.getQuantity() - sell.getQuantity());
-			buy.updateFilled(amountToStatisfy);
-			sell.updateFilled(amountToStatisfy);
+			int sellQuantity = sell.getQuantity();
+			int buyQuantity = buy.getQuantity();
+			
+			buy.updateFilled(sellQuantity);
+			sell.updateFilled(buyQuantity);
 			
 			if(buy.getNewStatus() == OrderStatus.FILLED || sell.getNewStatus() == OrderStatus.FILLED){
 				attemptMatch();
@@ -72,23 +74,23 @@ public class MessageCompositionImpl implements MessageComposition
 		}
 	}
 	
-	public void updateFilled(int amount)
+	public void updateFilled(int amountOfOppositeOrder)
 	{
+		int newAmount = this.quantity - amountOfOppositeOrder;
 		this.oldStatus = newStatus;
-		this.quantity = quantity-amount;
-		if(quantity > 0)
+		if(newAmount > 0)
 		{
 			this.newStatus = OrderStatus.PARTIAL;
+			this.quantity = newAmount;
 		}
 		else
 		{
 			this.newStatus = OrderStatus.FILLED;
+			this.quantity = 0;
 			orderBook.remove(this);
-			
 		}
 		ExecutedOrder executedOrder = executedOrderFactory.newInstance(session, oldStatus, newStatus, symbol, quantity, price, buy, clientId);
 		executedOrderOutput.put(executedOrder);
-		
 	}
 	
 	@Override
