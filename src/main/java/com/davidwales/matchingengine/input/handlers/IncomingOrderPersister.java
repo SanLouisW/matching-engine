@@ -2,11 +2,11 @@ package com.davidwales.matchingengine.input.handlers;
 
 import java.io.OutputStream;
 
-import com.davidwales.matchingengine.input.event.IncomingOrderEvent;
+import com.davidwales.matchingengine.inputorder.InputEvent;
 import com.google.inject.Inject;
 import com.lmax.disruptor.EventHandler;
 
-public class IncomingOrderPersister implements EventHandler<IncomingOrderEvent>{
+public class IncomingOrderPersister implements EventHandler<InputEvent>{
 
 	private OutputStream outputStream;
 	
@@ -16,7 +16,7 @@ public class IncomingOrderPersister implements EventHandler<IncomingOrderEvent>{
 		this.outputStream = outputStream;
 	}
 	
-	public void onEvent(IncomingOrderEvent arg0, long arg1, boolean arg2) throws Exception 
+	public void onEvent(InputEvent arg0, long arg1, boolean arg2) throws Exception 
 	{
 		outputStream.write(arg0.getRawData());
 	}

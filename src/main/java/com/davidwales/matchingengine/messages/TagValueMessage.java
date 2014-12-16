@@ -2,7 +2,7 @@ package com.davidwales.matchingengine.messages;
 
 import org.apache.mina.core.session.IoSession;
 
-import com.davidwales.matchingengine.priorityqueues.OrderStatus;
+import com.davidwales.matchingengine.inputorder.OrderStatus;
 
 public interface TagValueMessage {
 	

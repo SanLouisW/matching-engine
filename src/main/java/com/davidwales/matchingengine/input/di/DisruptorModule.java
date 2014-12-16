@@ -3,19 +3,18 @@ package com.davidwales.matchingengine.input.di;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import java.net.SocketAddress;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
+import org.apache.mina.core.filterchain.IoFilterAdapter;
 import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.core.service.IoHandlerAdapter;
-import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
@@ -29,44 +28,41 @@ import com.davidwales.matchingengine.input.di.annotations.OutputPersister;
 import com.davidwales.matchingengine.input.di.annotations.Persister;
 import com.davidwales.matchingengine.input.di.annotations.Responder;
 import com.davidwales.matchingengine.input.di.annotations.Unmarshaller;
-import com.davidwales.matchingengine.input.event.DisruptorProducer;
-import com.davidwales.matchingengine.input.event.IncomingOrderEvent;
-import com.davidwales.matchingengine.input.event.IncomingOrderEventFactory;
-import com.davidwales.matchingengine.input.event.IncomingOrderEventProducer;
 import com.davidwales.matchingengine.input.handlers.IncomingOrderPersister;
 import com.davidwales.matchingengine.input.handlers.IncomingOrderUnmarshaller;
 import com.davidwales.matchingengine.input.handlers.MatcherConsumer;
-import com.davidwales.matchingengine.messagecomposition.MessageComposition;
-import com.davidwales.matchingengine.messagecomposition.MessageCompositionFactory;
-import com.davidwales.matchingengine.messagecomposition.MessageCompositionFactoryImpl;
-import com.davidwales.matchingengine.messagecomposition.MessageCompositionImpl;
+import com.davidwales.matchingengine.inputorder.InputEvent;
+import com.davidwales.matchingengine.inputorder.InputEventFactory;
+import com.davidwales.matchingengine.inputorder.InputOrder;
+import com.davidwales.matchingengine.inputorder.InputOrderComparator;
+import com.davidwales.matchingengine.inputorder.InputOrderFactory;
+import com.davidwales.matchingengine.inputorder.InputOrderFactoryImpl;
+import com.davidwales.matchingengine.inputorder.OrderBook;
+import com.davidwales.matchingengine.inputorder.OrderBookImpl;
 import com.davidwales.matchingengine.messages.DataType;
 import com.davidwales.matchingengine.messages.FixTagValueMessageFactory;
+import com.davidwales.matchingengine.messages.Parser;
 import com.davidwales.matchingengine.messages.TagValueMessage;
 import com.davidwales.matchingengine.messages.TagValueMessageFactory;
-import com.davidwales.matchingengine.mina.NetworkInputHandler;
-import com.davidwales.matchingengine.output.disruptor.ExecuteOrderFactoryImpl;
-import com.davidwales.matchingengine.output.disruptor.ExecutedOrder;
-import com.davidwales.matchingengine.output.disruptor.ExecutedOrderFactory;
-import com.davidwales.matchingengine.output.disruptor.MatchingEventOutputDisruptor;
-import com.davidwales.matchingengine.output.disruptor.OrderOutputEvent;
-import com.davidwales.matchingengine.output.disruptor.OrderOutputEventFactory;
-import com.davidwales.matchingengine.output.disruptor.OrderOutputProducer;
-import com.davidwales.matchingengine.output.disruptor.handlers.Aggregation;
-import com.davidwales.matchingengine.output.disruptor.handlers.AggregatorServer;
-import com.davidwales.matchingengine.output.disruptor.handlers.OrderAggregation;
+import com.davidwales.matchingengine.messages.TagValueParser;
+import com.davidwales.matchingengine.network.AggregatorServer;
+import com.davidwales.matchingengine.network.NetworkInputConfiguration;
+import com.davidwales.matchingengine.network.NetworkInputConfigurationImpl;
+import com.davidwales.matchingengine.network.NetworkInputHandler;
 import com.davidwales.matchingengine.output.disruptor.handlers.OrderOutputResponder;
 import com.davidwales.matchingengine.output.disruptor.handlers.OutputOrderAggregator;
 import com.davidwales.matchingengine.output.disruptor.handlers.OutputOrderPersister;
-import com.davidwales.matchingengine.output.disruptor.handlers.aggregators.AggregatorTranslator;
-import com.davidwales.matchingengine.output.disruptor.handlers.aggregators.AggregatorTranslatorImpl;
-import com.davidwales.matchingengine.parser.Parser;
-import com.davidwales.matchingengine.parser.TagValueParser;
-import com.davidwales.matchingengine.priorityqueues.ExecutedOrderOutput;
-import com.davidwales.matchingengine.priorityqueues.OrderBook;
-import com.davidwales.matchingengine.priorityqueues.OrderBookImpl;
-import com.davidwales.matchingengine.translator.IncomingOrderTranslator;
-import com.davidwales.matchingengine.translator.OutputOrderTranslator;
+import com.davidwales.matchingengine.outputorder.Aggregation;
+import com.davidwales.matchingengine.outputorder.ExecutedOrderOutput;
+import com.davidwales.matchingengine.outputorder.ExecutedOrderOutputImpl;
+import com.davidwales.matchingengine.outputorder.OrderAggregation;
+import com.davidwales.matchingengine.outputorder.OutputEvent;
+import com.davidwales.matchingengine.outputorder.OutputEventFactory;
+import com.davidwales.matchingengine.outputorder.OutputOrder;
+import com.davidwales.matchingengine.outputorder.OutputOrderFactory;
+import com.davidwales.matchingengine.outputorder.OutputOrderFactoryImpl;
+import com.davidwales.matchingengine.translator.InputEventTranslator;
+import com.davidwales.matchingengine.translator.OutputEventTranslator;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
@@ -76,6 +72,7 @@ import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.EventTranslatorOneArg;
 import com.lmax.disruptor.EventTranslatorTwoArg;
+import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 
 public class DisruptorModule extends AbstractModule 
@@ -84,59 +81,110 @@ public class DisruptorModule extends AbstractModule
 	@Override 
 	protected void configure() 
 	{
-		//RingBuffer dependency injection
-		bind(TagValueMessageFactory.class).to(FixTagValueMessageFactory.class);
-		bind(ExecutedOrderFactory.class).to(ExecuteOrderFactoryImpl.class);
-		bind(ExecutedOrderOutput.class).to(MatchingEventOutputDisruptor.class);
-		bind(AggregatorTranslator.class).to(AggregatorTranslatorImpl.class);
-		bind(IoHandlerAdapter.class).to(NetworkInputHandler.class);
-		bind(MessageCompositionFactory.class).to(MessageCompositionFactoryImpl.class);
-		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
 		
-		//Here be dragons
-		bind(new TypeLiteral<EventFactory<OrderOutputEvent>>(){}).to(OrderOutputEventFactory.class);
-		bind(new TypeLiteral<EventHandler<OrderOutputEvent>>(){}).annotatedWith(Responder.class).to(OrderOutputResponder.class);
-		bind(new TypeLiteral<EventHandler<OrderOutputEvent>>(){}).annotatedWith(Aggregator.class).to(OutputOrderPersister.class);
-		bind(new TypeLiteral<EventHandler<OrderOutputEvent>>(){}).annotatedWith(OutputPersister.class).to(OutputOrderAggregator.class);
-		bind(new TypeLiteral<EventFactory<IncomingOrderEvent>>(){}).to(IncomingOrderEventFactory.class);
-		bind(new TypeLiteral<Parser<TagValueMessage>>(){}).to(new TypeLiteral<TagValueParser<TagValueMessage>>(){});
-		bind(new TypeLiteral<OrderBook<MessageComposition>>(){}).to(OrderBookImpl.class);
-		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Persister.class).to(IncomingOrderPersister.class);
-		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Unmarshaller.class).to(IncomingOrderUnmarshaller.class);
-		bind(new TypeLiteral<EventHandler<IncomingOrderEvent>>(){}).annotatedWith(Matcher.class).to(MatcherConsumer.class);
+		//Network input DI
+		bind(IoHandler.class).to(NetworkInputHandler.class);
+		bind(NetworkInputConfiguration.class).to(NetworkInputConfigurationImpl.class);
+		bind(IoAcceptor.class).to(NioSocketAcceptor.class);
+		
 		//
 		
-		//Producer dependency injection 
-		bind(new TypeLiteral<EventTranslatorTwoArg<IncomingOrderEvent, byte[], IoSession>>(){}).to(IncomingOrderTranslator.class);
-		bind(new TypeLiteral<EventTranslatorOneArg<OrderOutputEvent, ExecutedOrder>>(){}).to(OutputOrderTranslator.class);
+		//Web Socket Server DI
+		bind(WebSocketServer.class).to(AggregatorServer.class);
+		//
 		
-		bind(new TypeLiteral<DisruptorProducer<IncomingOrderEvent, byte[]>>(){}).to(IncomingOrderEventProducer.class);
-		bind(new TypeLiteral<DisruptorProducer<OrderOutputEvent, ExecutedOrder>>(){}).to(OrderOutputProducer.class);
+		//Input Disruptor Factories which are injected in the input disruptor provider declared below DI		
+		bind(new TypeLiteral<EventFactory<InputEvent>>(){}).to(InputEventFactory.class);
+		bind(TagValueMessageFactory.class).to(FixTagValueMessageFactory.class);
+		//
+		
+		//Input Disruptor handlers which are injected in the input disruptor provider declared below DI
+		bind(new TypeLiteral<EventHandler<InputEvent>>(){}).annotatedWith(Persister.class).to(IncomingOrderPersister.class);
+		bind(new TypeLiteral<EventHandler<InputEvent>>(){}).annotatedWith(Unmarshaller.class).to(IncomingOrderUnmarshaller.class);
+		bind(new TypeLiteral<EventHandler<InputEvent>>(){}).annotatedWith(Matcher.class).to(MatcherConsumer.class);
+		//
+		
+		//Output Disruptor Factories which are injected in the output disruptor provider declared below DI		
+		bind(new TypeLiteral<EventFactory<OutputEvent>>(){}).to(OutputEventFactory.class);
+		bind(OutputOrderFactory.class).to(OutputOrderFactoryImpl.class);
+		//
+		
+		//Output Disruptor handlers which are injected in the output disruptor provider declared below DI
+		bind(new TypeLiteral<EventHandler<OutputEvent>>(){}).annotatedWith(Responder.class).to(OrderOutputResponder.class);
+		bind(new TypeLiteral<EventHandler<OutputEvent>>(){}).annotatedWith(Aggregator.class).to(OutputOrderPersister.class);
+		bind(new TypeLiteral<EventHandler<OutputEvent>>(){}).annotatedWith(OutputPersister.class).to(OutputOrderAggregator.class);
+		//
+		
+		//Input order factory DI, used to turn a message into an enriched input order for matching purposes
+		bind(InputOrderFactory.class).to(InputOrderFactoryImpl.class);
+		bind(ExecutedOrderOutput.class).to(ExecutedOrderOutputImpl.class);
+		
+		//Here be dragons
+		bind(new TypeLiteral<Parser<TagValueMessage>>(){}).to(new TypeLiteral<TagValueParser<TagValueMessage>>(){});
+		bind(new TypeLiteral<OrderBook<InputOrder>>(){}).to(OrderBookImpl.class);
+		//
+		
+		//Translator dependency injection 
+		bind(new TypeLiteral<EventTranslatorTwoArg<InputEvent, byte[], IoSession>>(){}).to(InputEventTranslator.class);
+		bind(new TypeLiteral<EventTranslatorOneArg<OutputEvent, OutputOrder>>(){}).to(OutputEventTranslator.class);
+		
 	}
 	
+	
+	//Network input DI
+	@Provides
+	public IoFilterAdapter getFilter()
+	{
+		return new ProtocolCodecFilter( new TextLineCodecFactory( Charset.forName( "US-ASCII" )));
+	}
+	
+	@Provides
+	public SocketAddress getSocketAddress()
+	{
+		//TODO maintain port
+		int port = 9123;
+		return new InetSocketAddress(port);
+	}
+	
+	//Input Disruptor DI
 	@Singleton
 	@Inject
 	@Provides
 	@SuppressWarnings("unchecked")
-	public Disruptor<IncomingOrderEvent> getDisruptor(EventFactory<IncomingOrderEvent> factory, @Persister EventHandler<IncomingOrderEvent> persister, @Unmarshaller EventHandler<IncomingOrderEvent> unmarshaller, @Matcher EventHandler<IncomingOrderEvent> matcher) 
+	public Disruptor<InputEvent> getDisruptor(EventFactory<InputEvent> factory, @Persister EventHandler<InputEvent> persister, @Unmarshaller EventHandler<InputEvent> unmarshaller, @Matcher EventHandler<InputEvent> matcher) 
 	{
-		Disruptor<IncomingOrderEvent> disruptor = new Disruptor<>(factory, 1024, Executors.newCachedThreadPool());
+		Disruptor<InputEvent> disruptor = new Disruptor<>(factory, 1024, Executors.newCachedThreadPool());
 		disruptor.handleEventsWith(persister);
 		disruptor.handleEventsWith(unmarshaller).then(matcher);
-		disruptor.start();
 		return disruptor;     
 	}
 	
+	//Used to inject the object used to publish events to the ring buffer into classes that need it
+	@Singleton
+	@Inject
+	@Provides
+	public RingBuffer<InputEvent> getRingBuffer(Disruptor<InputEvent> disruptor)
+	{
+		return disruptor.getRingBuffer();
+	}
+	//Used to inject the object used to publish events to the ring buffer into classes that need it
+	@Singleton
+	@Inject
+	@Provides
+	public RingBuffer<OutputEvent> getOutputRingBuffer(Disruptor<OutputEvent> disruptor)
+	{
+		return disruptor.getRingBuffer();
+	}
+	
 	@Singleton
 	@Inject
 	@Provides
 	@SuppressWarnings("unchecked")
-	public Disruptor<OrderOutputEvent> getDisruptorOrderOutputEvent(EventFactory<OrderOutputEvent> factory, @Aggregator EventHandler<OrderOutputEvent> aggregator, @OutputPersister EventHandler<OrderOutputEvent> persister, @Responder EventHandler<OrderOutputEvent> responder) 
+	public Disruptor<OutputEvent> getDisruptorOrderOutputEvent(EventFactory<OutputEvent> factory, @Aggregator EventHandler<OutputEvent> aggregator, @OutputPersister EventHandler<OutputEvent> persister, @Responder EventHandler<OutputEvent> responder) 
 	{
-		Disruptor<OrderOutputEvent> disruptor = new Disruptor<>(factory, 1024, Executors.newCachedThreadPool());
+		Disruptor<OutputEvent> disruptor = new Disruptor<>(factory, 1024, Executors.newCachedThreadPool());
 		disruptor.handleEventsWith(responder);
 		disruptor.handleEventsWith(aggregator).then(persister);
-		disruptor.start();
 		return disruptor;     
 	}
 	
@@ -150,15 +198,6 @@ public class DisruptorModule extends AbstractModule
 		return symbolToAggregation;
 	}
 	
-	@Inject
-	@Provides
-	public WebSocketServer getWebSocketServer(ConcurrentHashMap<String, Aggregation> symbolToAggregation) throws UnknownHostException 
-	{
-		AggregatorServer server = new AggregatorServer(8887, symbolToAggregation);
-		server.start();
-		return server;	
-	}
-	
 	@Singleton
 	@Provides
 	public OutputStream getOuputStream() throws FileNotFoundException
@@ -169,37 +208,23 @@ public class DisruptorModule extends AbstractModule
 	}
 	
 	@Provides
-	public PriorityQueue<MessageComposition> getPriorityQueue()
+	public PriorityQueue<InputOrder> getPriorityQueue()
 	{
-		return new PriorityQueue<MessageComposition>(100, new MessageCompositionComparator());
+		return new PriorityQueue<InputOrder>(100, new InputOrderComparator());
 	}
 	
 	@Singleton
 	@Provides
 	@Inject
-	public ObjectObjectOpenHashMap<String, OrderBook<MessageComposition>> getSymbolToOrderBook(OrderBook<MessageComposition> orderBook)
+	public ObjectObjectOpenHashMap<String, OrderBook<InputOrder>> getSymbolToOrderBook(OrderBook<InputOrder> orderBook)
 	{
-		ObjectObjectOpenHashMap<String, OrderBook<MessageComposition>> symbolToOrderBook = ObjectObjectOpenHashMap.newInstance(1, 2);
+		ObjectObjectOpenHashMap<String, OrderBook<InputOrder>> symbolToOrderBook = ObjectObjectOpenHashMap.newInstance(1, 2);
 		String symbol = "aaa";
 		
 		symbolToOrderBook.put(symbol, orderBook);
 		return symbolToOrderBook;
 	}
 	
-	@Singleton
-	@Provides
-	@Inject
-	public IoAcceptor getIoAcceptor(IoHandlerAdapter ioHandlerAdapter) throws IOException
-	{
-        IoAcceptor acceptor = new NioSocketAcceptor();
-        acceptor.getFilterChain().addLast( "codec", new ProtocolCodecFilter( new TextLineCodecFactory( Charset.forName( "US-ASCII" ))));
-        acceptor.setHandler(  ioHandlerAdapter );
-        acceptor.getSessionConfig().setReadBufferSize( 2048 );
-        acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, 10 );
-        acceptor.bind( new InetSocketAddress(9123) );
-		return acceptor;
-
-	}
 	
 	@Singleton
 	@Provides

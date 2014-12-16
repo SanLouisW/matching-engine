@@ -1,13 +1,13 @@
 package com.davidwales.matchingengine.output.disruptor.handlers;
 
-import com.davidwales.matchingengine.output.disruptor.OrderOutputEvent;
+import com.davidwales.matchingengine.outputorder.OutputEvent;
 import com.lmax.disruptor.EventHandler;
 
-public class OutputOrderPersister implements EventHandler<OrderOutputEvent> 
+public class OutputOrderPersister implements EventHandler<OutputEvent> 
 {
 
 	@Override
-	public void onEvent(OrderOutputEvent event, long sequence, boolean endOfBatch) throws Exception 
+	public void onEvent(OutputEvent event, long sequence, boolean endOfBatch) throws Exception 
 	{
 		System.out.println("order Persister thread");
 	}

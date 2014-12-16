@@ -1,7 +1,6 @@
 package com.davidwales.matchingengine;
 
 
-import com.davidwales.matchingengine.input.di.DisruptorComposition;
 import com.davidwales.matchingengine.input.di.DisruptorModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -17,7 +16,8 @@ public class App
     {
     	
 		Injector injector = Guice.createInjector(new DisruptorModule());
-    	DisruptorComposition disruptor = injector.getInstance(DisruptorComposition.class);
+    	ApplicationStarter starter = injector.getInstance(ApplicationStarter.class);
     	
+    	starter.start();
     }
 }
